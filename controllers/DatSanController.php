@@ -36,18 +36,18 @@ class DatSanController extends Controller {
     }
 
     public function getSchedule() {
-        // AJAX endpoint returning HTML
+        // Trả về giao diện lịch đặt sân qua AJAX
         $san_id = intval($_GET['san_id'] ?? 0);
         $min_allowed = max('2025-01-01', date('Y-m-d'));
         $ngay_dat = $_GET['ngay_dat'] ?? date('Y-m-d');
         if ($ngay_dat < $min_allowed) {
             $ngay_dat = $min_allowed;
         }
-        $view_mode = $_GET['mode'] ?? 'san_5'; // 'san_5' or 'san_7'
+        $view_mode = $_GET['mode'] ?? 'san_5'; // 'san_5' hoặc 'san_7'
         
         $conn = Database::getConnection();
 
-        // Cleanup đơn quá hạn — dùng centralized method thay vì copy-paste query
+        // Tự động giải phóng các đơn giữ chỗ đã hết hạn 10 phút
         Database::cleanupExpiredBookings();
         
         $san_info_stmt = $conn->prepare("SELECT ten_san, so_luong, loai_san, quy_tac_ghep FROM san_bong WHERE san_id = ?");
@@ -65,7 +65,7 @@ class DatSanController extends Controller {
         $loai_san_goc = $san_info['loai_san'];
         $quy_tac_ghep = (int)$san_info['quy_tac_ghep'];
 
-        // Sân chuyên 7 người
+        // Trường hợp sân chuyên 7 người
         if ($loai_san_goc === 'san_7') {
             $view_mode = 'san_7';
         }

@@ -8,7 +8,7 @@ $vai_tro = isset($_SESSION['vai_tro']) ? $_SESSION['vai_tro'] : '';
 $ctrl = $_GET['controller'] ?? 'Home';
 $action = $_GET['action'] ?? 'index';
 
-// Helper for active link
+// Đánh dấu menu đang được kích hoạt
 function isActive($expectedCtrl, $currentCtrl) {
     return ($expectedCtrl === $currentCtrl) ? 'active' : '';
 }

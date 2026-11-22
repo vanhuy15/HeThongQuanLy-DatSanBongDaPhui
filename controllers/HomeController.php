@@ -7,8 +7,7 @@ use Config\Database;
 class HomeController extends Controller {
 
     /**
-     * Extract logic query chung — dùng cho cả index() và searchAjax().
-     * Loại bỏ vi phạm DRY khi cé là hai phương thức giống nhau ~100 dòng.
+     * Phương thức truy vấn dữ liệu sân bóng chung cho cả trang chủ và tìm kiếm AJAX
      */
     private function fetchPitchesData(
         string $search_term,
@@ -79,7 +78,7 @@ class HomeController extends Controller {
 
         $where_sql = implode(" AND ", $where_clauses);
 
-        // Count Total
+        // Đếm tổng số sân phù hợp
         $sql_total = "SELECT COUNT(DISTINCT sb.san_id) as total FROM san_bong sb WHERE $where_sql";
         $stmt_total = $conn->prepare($sql_total);
         if (!empty($params)) {
@@ -90,7 +89,7 @@ class HomeController extends Controller {
         $total_pages = ceil($total_rows / $limit);
         $stmt_total->close();
 
-        // Get Pitches with Rating & Price Info
+        // Lấy danh sách sân kèm điểm đánh giá và khoảng giá
         $sql = "SELECT sb.*,
                        (SELECT COALESCE(AVG(so_sao), 0) FROM danh_gia WHERE san_id = sb.san_id) as avg_rating,
                        (SELECT COUNT(danh_gia_id) FROM danh_gia WHERE san_id = sb.san_id) as total_reviews,
@@ -133,7 +132,7 @@ class HomeController extends Controller {
     }
 
     public function index() {
-        // Cleanup đơn quá hạn — dùng centralized method thay vì copy-paste query
+        // Tự động giải phóng các đơn giữ chỗ đã hết hạn 10 phút
         Database::cleanupExpiredBookings();
 
         $limit = 8;
@@ -159,7 +158,7 @@ class HomeController extends Controller {
     }
 
     public function searchAjax() {
-        // Cleanup đơn quá hạn — dùng centralized method thay vì copy-paste query
+        // Tự động giải phóng các đơn giữ chỗ đã hết hạn 10 phút
         Database::cleanupExpiredBookings();
 
         $limit = 8;
@@ -170,7 +169,7 @@ class HomeController extends Controller {
         $min_price   = (isset($_GET['min_price']) && is_numeric($_GET['min_price'])) ? floatval($_GET['min_price']) : 0;
         $max_price   = (isset($_GET['max_price']) && is_numeric($_GET['max_price'])) ? floatval($_GET['max_price']) : 0;
 
-        // Dùng shared method — không còn copy-paste 80 dòng query
+        // Lấy dữ liệu sân bóng theo bộ lọc
         $data = $this->fetchPitchesData($search_term, $loai_san, $min_price, $max_price, $page, $limit);
         $san_bongs  = $data['san_bongs'];
         $total_pages = $data['total_pages'];

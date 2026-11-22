@@ -48,7 +48,7 @@ class PaymentController extends Controller {
         $existing_payment = $stmt_check->get_result()->fetch_assoc();
         $stmt_check->close();
 
-        // Tự động kiểm tra thời hạn 10 phút nếu chưa chọn thanh toán
+        // Kiểm tra thời hạn giữ chỗ 10 phút
         $created_time = strtotime($dat_san['ngay_tao']);
         $expire_time = $created_time + (10 * 60);
         $remaining_seconds = $expire_time - time();
@@ -70,7 +70,7 @@ class PaymentController extends Controller {
 
             $phuong_thuc = $_POST['phuong_thuc'] ?? 'tien_mat';
             
-            // Khóa tiền mặt nếu điểm uy tín < 60
+            // Khóa phương thức tiền mặt nếu điểm uy tín dưới 60
             if ($phuong_thuc === 'tien_mat' && $user_diem_uy_tin < 60) {
                 $this->render('payment/index', [
                     'dat_san' => $dat_san,
@@ -83,16 +83,16 @@ class PaymentController extends Controller {
             }
 
             if ($phuong_thuc === 'chuyen_khoan') {
-                // CHUYỂN KHOẢN: Chờ admin kiểm tra tài khoản ngân hàng và duyệt
+                // Chuyển khoản: Đơn chờ quản trị viên đối soát tài khoản
                 $tt_trang_thai = 'cho_xu_ly';
                 $ds_trang_thai = 'Chờ xác nhận';
             } else {
-                // TIỀN MẶT: Chờ admin gọi điện xác nhận hoặc duyệt thủ công
+                // Tiền mặt: Đơn chờ quản trị viên xác nhận tại sân
                 $tt_trang_thai = 'cho_xu_ly';
                 $ds_trang_thai = 'Chờ xác nhận';
             }
 
-            // Ghi nhận bảng thanh_toan
+            // Lưu thông tin thanh toán
             $stmt2 = $conn->prepare("INSERT INTO thanh_toan (dat_san_id, phuong_thuc, trang_thai) VALUES (?, ?, ?)");
             $stmt2->bind_param("iss", $dat_san_id, $phuong_thuc, $tt_trang_thai);
             $stmt2->execute();

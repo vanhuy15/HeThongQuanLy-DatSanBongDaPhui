@@ -91,17 +91,17 @@ while ($row = $res->fetch_assoc()) {
 }
 $stmt->close();
 
-// File Name
+// Tên tệp xuất Excel
 $date_suffix = !empty($filter_date) ? $filter_date : date('Ymd_His');
 $filename = "Bao_Cao_Doanh_Thu_SanBong_" . $date_suffix . ".xls";
 
-// Headers for Excel (.xls via XML/HTML format)
+// Thiết lập tiêu đề tải tệp Excel (.xls)
 header("Content-Type: application/vnd.ms-excel; charset=UTF-8");
 header("Content-Disposition: attachment; filename=\"$filename\"");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Output UTF-8 BOM
+// Thêm ký tự UTF-8 BOM để Excel hiển thị đúng dấu tiếng Việt
 echo "\xEF\xBB\xBF";
 ?>
 <!DOCTYPE html>

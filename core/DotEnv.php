@@ -4,7 +4,7 @@ namespace Core;
 class DotEnv
 {
     /**
-     * The directory where the .env file can be located.
+     * Đường dẫn đến tệp .env
      *
      * @var string
      */
@@ -35,7 +35,7 @@ class DotEnv
             $name = trim($name);
             $value = trim($value);
             
-            // Remove quotes if present
+            // Loại bỏ dấu nháy đơn hoặc nháy kép nếu có
             $value = trim($value, '"\'');
 
             if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
