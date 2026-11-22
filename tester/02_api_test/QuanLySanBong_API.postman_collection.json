@@ -1,13 +1,13 @@
 {
   "info": {
     "_postman_id": "8ca2bc9d-cff2-45db-857a-46de7e890d2f",
-    "name": "QuanLySanBong_Full_API_TestSuite",
-    "description": "Bộ Test API tự động toàn diện 100% chức năng & thuật toán Hệ thống Quản lý Đặt sân bóng đá (Client & Admin)",
+    "name": "Bộ Kiểm Thử Toàn Diện API - Quản Lý Sân Bóng Đà Nẵng",
+    "description": "Tập hợp toàn bộ các ca kiểm thử API tự động cho hệ thống Quản Lý & Đặt Sân Bóng Đá Phủi Đà Nẵng với đường dẫn trực tiếp http://localhost/quanlysanbong.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "01 - Authentication & Security",
+      "name": "01 - Đăng Nhập & Bảo Mật Hệ Thống",
       "item": [
         {
           "name": "TC00 - Khởi tạo phiên & Trích xuất CSRF Token",
@@ -19,7 +19,8 @@
                   "pm.test(\"Status code là 200\", function () { pm.response.to.have.status(200); });",
                   "const html = pm.response.text();",
                   "const match = html.match(/name=\"csrf_token\"\\s+value=\"([a-f0-9]{64})\"/);",
-                  "if (match) { pm.environment.set(\"csrf_token\", match[1]); }"
+                  "if (match) { pm.environment.set(\"csrf_token\", match[1]);",
+                  "    pm.collectionVariables.set(\"csrf_token\", match[1]); }"
                 ],
                 "type": "text/javascript"
               }
@@ -28,23 +29,17 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Auth&action=login",
+              "raw": "http://localhost/quanlysanbong/auth/login",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "auth",
+                "login"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "Auth"
-                },
-                {
-                  "key": "action",
-                  "value": "login"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -77,23 +72,17 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=DatSan&action=book",
+              "raw": "http://localhost/quanlysanbong/datsan/book",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "datsan",
+                "book"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "DatSan"
-                },
-                {
-                  "key": "action",
-                  "value": "book"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -144,23 +133,17 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Auth&action=login",
+              "raw": "http://localhost/quanlysanbong/auth/login",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "auth",
+                "login"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "Auth"
-                },
-                {
-                  "key": "action",
-                  "value": "login"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -208,23 +191,17 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Auth&action=login",
+              "raw": "http://localhost/quanlysanbong/auth/login",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "auth",
+                "login"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "Auth"
-                },
-                {
-                  "key": "action",
-                  "value": "login"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -273,30 +250,24 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=DatSan&action=bookSubmit",
+              "raw": "http://localhost/quanlysanbong/datsan/bookSubmit",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "datsan",
+                "bookSubmit"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "DatSan"
-                },
-                {
-                  "key": "action",
-                  "value": "bookSubmit"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         }
       ]
     },
     {
-      "name": "02 - Discovery & Pitch Search",
+      "name": "02 - Tìm Kiếm & Khám Phá Sân Bóng",
       "item": [
         {
           "name": "TC06 - Tải trang chủ danh sách sân bóng",
@@ -320,13 +291,15 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php",
+              "raw": "http://localhost/quanlysanbong/",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
-              ]
+                "quanlysanbong",
+                ""
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -351,27 +324,22 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Home&action=searchAjax&search=Nam+Cao",
+              "raw": "http://localhost/quanlysanbong/home/searchAjax?search=Nam+Cao",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "home",
+                "searchAjax"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "Home"
-                },
-                {
-                  "key": "action",
-                  "value": "searchAjax"
-                },
                 {
                   "key": "search",
                   "value": "Nam Cao"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -393,27 +361,22 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Home&action=searchAjax&loai_san=san_5",
+              "raw": "http://localhost/quanlysanbong/home/searchAjax?loai_san=san_5",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "home",
+                "searchAjax"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "Home"
-                },
-                {
-                  "key": "action",
-                  "value": "searchAjax"
-                },
                 {
                   "key": "loai_san",
                   "value": "san_5"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -435,22 +398,16 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Home&action=searchAjax&min_price=200000&max_price=300000",
+              "raw": "http://localhost/quanlysanbong/home/searchAjax?min_price=200000&max_price=300000",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "home",
+                "searchAjax"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "Home"
-                },
-                {
-                  "key": "action",
-                  "value": "searchAjax"
-                },
                 {
                   "key": "min_price",
                   "value": "200000"
@@ -459,14 +416,15 @@
                   "key": "max_price",
                   "value": "300000"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         }
       ]
     },
     {
-      "name": "03 - Booking & Slot Availability",
+      "name": "03 - Xem Lịch & Đặt Sân Trực Tuyến",
       "item": [
         {
           "name": "TC10 - Lấy lịch khung giờ sân bóng (AJAX getSchedule)",
@@ -489,22 +447,16 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=DatSan&action=getSchedule&san_id=1&ngay=2026-11-20",
+              "raw": "http://localhost/quanlysanbong/datsan/getSchedule?san_id=1&ngay=2026-11-20",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "datsan",
+                "getSchedule"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "DatSan"
-                },
-                {
-                  "key": "action",
-                  "value": "getSchedule"
-                },
                 {
                   "key": "san_id",
                   "value": "1"
@@ -513,7 +465,8 @@
                   "key": "ngay",
                   "value": "2026-11-20"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -538,22 +491,16 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=DatSan&action=getSchedule&san_id=1&ngay_dat=2026-11-20&mode=san_7",
+              "raw": "http://localhost/quanlysanbong/datsan/getSchedule?san_id=1&ngay_dat=2026-11-20&mode=san_7",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "datsan",
+                "getSchedule"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "DatSan"
-                },
-                {
-                  "key": "action",
-                  "value": "getSchedule"
-                },
                 {
                   "key": "san_id",
                   "value": "1"
@@ -566,7 +513,8 @@
                   "key": "mode",
                   "value": "san_7"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -584,13 +532,16 @@
                   "try {",
                   "    var res = pm.response.json();",
                   "    if (res.success && res.dat_san_id) {",
-                  "        pm.environment.set('latest_booking_id', res.dat_san_id);",
+                  "        pm.environment.set(\"latest_booking_id\", res.dat_san_id);",
+                  "    pm.collectionVariables.set(\"latest_booking_id\", res.dat_san_id);",
                   "        console.log('Created dynamic booking ID:', res.dat_san_id);",
                   "    } else {",
-                  "        pm.environment.set('latest_booking_id', '135');",
+                  "        pm.environment.set(\"latest_booking_id\", '135');",
+                  "    pm.collectionVariables.set(\"latest_booking_id\", '135');",
                   "    }",
                   "} catch(e) {",
-                  "    pm.environment.set('latest_booking_id', '135');",
+                  "    pm.environment.set(\"latest_booking_id\", '135');",
+                  "    pm.collectionVariables.set(\"latest_booking_id\", '135');",
                   "}"
                 ]
               }
@@ -645,30 +596,24 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=DatSan&action=bookSubmit",
+              "raw": "http://localhost/quanlysanbong/datsan/bookSubmit",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "datsan",
+                "bookSubmit"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "DatSan"
-                },
-                {
-                  "key": "action",
-                  "value": "bookSubmit"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         }
       ]
     },
     {
-      "name": "04 - Checkout & Payment",
+      "name": "04 - Giữ Chỗ, Thanh Toán & Quét Mã VietQR",
       "item": [
         {
           "name": "TC13 - Xem trang thanh toán kèm bộ đếm giữ chỗ 10 phút",
@@ -693,27 +638,21 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Payment&action=index&dat_san_id={{latest_booking_id}}",
+              "raw": "http://localhost/quanlysanbong/payment?dat_san_id={{latest_booking_id}}",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "payment"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "Payment"
-                },
-                {
-                  "key": "action",
-                  "value": "index"
-                },
                 {
                   "key": "dat_san_id",
                   "value": "{{latest_booking_id}}"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -756,27 +695,21 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Payment&action=index&dat_san_id={{latest_booking_id}}",
+              "raw": "http://localhost/quanlysanbong/payment?dat_san_id={{latest_booking_id}}",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "payment"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "Payment"
-                },
-                {
-                  "key": "action",
-                  "value": "index"
-                },
                 {
                   "key": "dat_san_id",
                   "value": "{{latest_booking_id}}"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -800,34 +733,28 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Payment&action=index&dat_san_id=-1",
+              "raw": "http://localhost/quanlysanbong/payment?dat_san_id=-1",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "payment"
               ],
               "query": [
-                {
-                  "key": "controller",
-                  "value": "Payment"
-                },
-                {
-                  "key": "action",
-                  "value": "index"
-                },
                 {
                   "key": "dat_san_id",
                   "value": "-1"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         }
       ]
     },
     {
-      "name": "05 - Customer Portal",
+      "name": "05 - Thông Tin Cá Nhân & Lịch Sử Đặt Sân",
       "item": [
         {
           "name": "TC15 - Xem lịch sử đặt sân của người dùng",
@@ -850,23 +777,17 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=User&action=history",
+              "raw": "http://localhost/quanlysanbong/user/history",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "user",
+                "history"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "User"
-                },
-                {
-                  "key": "action",
-                  "value": "history"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -891,23 +812,17 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=User&action=profile",
+              "raw": "http://localhost/quanlysanbong/user/profile",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "user",
+                "profile"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "User"
-                },
-                {
-                  "key": "action",
-                  "value": "profile"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -933,23 +848,17 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Notification&action=getLatest",
+              "raw": "http://localhost/quanlysanbong/notification/getLatest",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "notification",
+                "getLatest"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "Notification"
-                },
-                {
-                  "key": "action",
-                  "value": "getLatest"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -1007,30 +916,24 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Review&action=submit",
+              "raw": "http://localhost/quanlysanbong/review/submit",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "review",
+                "submit"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "Review"
-                },
-                {
-                  "key": "action",
-                  "value": "submit"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         }
       ]
     },
     {
-      "name": "06 - Admin Management",
+      "name": "06 - Quản Trị Hệ Thống (Dành Cho Admin)",
       "item": [
         {
           "name": "TC18_B - Đăng nhập tài khoản Quản trị viên (admin15)",
@@ -1076,23 +979,17 @@
               ]
             },
             "url": {
-              "raw": "{{baseUrl}}/index.php?controller=Auth&action=login",
+              "raw": "http://localhost/quanlysanbong/auth/login",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
-                "index.php"
+                "quanlysanbong",
+                "auth",
+                "login"
               ],
-              "query": [
-                {
-                  "key": "controller",
-                  "value": "Auth"
-                },
-                {
-                  "key": "action",
-                  "value": "login"
-                }
-              ]
+              "query": [],
+              "protocol": "http"
             }
           }
         },
@@ -1114,14 +1011,16 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/admin/index.php",
+              "raw": "http://localhost/quanlysanbong/admin/index.php",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
+                "quanlysanbong",
                 "admin",
                 "index.php"
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -1143,11 +1042,12 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/admin/datsan/index.php?status=Chờ+xác+nhận",
+              "raw": "http://localhost/quanlysanbong/admin/datsan/index.php?status=Chờ+xác+nhận",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
+                "quanlysanbong",
                 "admin",
                 "datsan",
                 "index.php"
@@ -1157,7 +1057,8 @@
                   "key": "status",
                   "value": "Chờ xác nhận"
                 }
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -1179,15 +1080,17 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/admin/sanbong/index.php",
+              "raw": "http://localhost/quanlysanbong/admin/sanbong/index.php",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
+                "quanlysanbong",
                 "admin",
                 "sanbong",
                 "index.php"
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -1209,15 +1112,17 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/admin/khunggio/index.php",
+              "raw": "http://localhost/quanlysanbong/admin/khunggio/index.php",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
+                "quanlysanbong",
                 "admin",
                 "khunggio",
                 "index.php"
-              ]
+              ],
+              "protocol": "http"
             }
           }
         },
@@ -1239,19 +1144,38 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/admin/user/index.php",
+              "raw": "http://localhost/quanlysanbong/admin/user/index.php",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
               "path": [
+                "quanlysanbong",
                 "admin",
                 "user",
                 "index.php"
-              ]
+              ],
+              "protocol": "http"
             }
           }
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost/quanlysanbong",
+      "type": "string"
+    },
+    {
+      "key": "csrf_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "latest_booking_id",
+      "value": "135",
+      "type": "string"
     }
   ]
 }

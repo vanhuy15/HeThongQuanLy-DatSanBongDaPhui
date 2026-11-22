@@ -1,3 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /quanlysanbong/
+
+    # Bỏ qua không rewrite các thư mục và tập tin vật lý thực tế (css, js, assets, admin, images...)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Điều hướng mọi URL ảo còn lại về index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
 <IfModule mod_headers.c>
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
@@ -5,4 +17,3 @@
 </IfModule>
 
 ServerSignature Off
-
