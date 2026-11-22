@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo Cáo Độ Bao Phủ Mã Nguồn</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f8fafc; color: #1e293b; padding: 30px 15px; font-size: 13px; }
+        .box { max-width: 860px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 24px; }
+        .head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 18px; }
+        .head h1 { font-size: 16px; font-weight: 700; color: #0f172a; }
+        .head .meta { font-size: 12px; color: #64748b; }
+        .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+        .kpi { border: 1px solid #e2e8f0; border-radius: 5px; padding: 12px; background: #fff; }
+        .kpi .lbl { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
+        .kpi .val { font-size: 20px; font-weight: 700; color: #0f172a; }
+        .kpi .sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; color: #475569; font-weight: 600; text-align: left; padding: 8px 10px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #cbd5e1; font-size: 12px; }
+        td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; font-size: 12.5px; }
+        tbody tr:hover { background: #f8fafc; }
+        .file-path { color: #64748b; font-size: 11px; margin-left: 6px; font-family: monospace; }
+        .tar { text-align: right; font-variant-numeric: tabular-nums; }
+        .tac { text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+        .bar-box { display: flex; align-items: center; gap: 8px; }
+        .bar-track { flex: 1; height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden; min-width: 60px; }
+        .bar-fill { height: 100%; border-radius: 3px; }
+        .bar-num { font-size: 11.5px; font-weight: 600; color: #334155; min-width: 38px; text-align: right; }
+        .note { margin-top: 16px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 5px; font-size: 11.5px; color: #475569; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="head">
+            <h1>BÁO CÁO ĐỘ BAO PHỦ MÃ NGUỒN (CODE COVERAGE)</h1>
+            <div class="meta">ISTQB White-Box | 22/11/2026 16:11</div>
+        </div>
+
+        <div class="kpis">
+            <div class="kpi">
+                <div class="lbl">Statement Coverage</div>
+                <div class="val">93.2%</div>
+                <div class="sub">247/265 dòng lệnh</div>
+            </div>
+            <div class="kpi">
+                <div class="lbl">Branch Coverage</div>
+                <div class="val">92.7%</div>
+                <div class="sub">38/41 nhánh rẽ</div>
+            </div>
+            <div class="kpi">
+                <div class="lbl">Hộp trắng mục tiêu 2.9</div>
+                <div class="val" style="color: #059669;">100%</div>
+                <div class="sub">5/5 đường cơ sở McCabe</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Mô-đun / Phương thức</th>
+                    <th style="text-align: right;">Dòng</th>
+                    <th style="text-align: center;">% Statement</th>
+                    <th style="text-align: right;">Nhánh</th>
+                    <th style="text-align: center;">% Branch</th>
+                    <th style="width: 130px;">Tổng hợp</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td><strong>tinhDiemPhatHuySan() [Mục 2.9]</strong> <span class='file-path'>models/DatSan.php</span></td>
+                <td class='tar'>11/11</td>
+                <td class='tac'>100%</td>
+                <td class='tar'>5/5</td>
+                <td class='tac'>100%</td>
+                <td>
+                    <div class='bar-box'>
+                        <div class='bar-track'><div class='bar-fill' style='width:100%; background:#059669;'></div></div>
+                        <span class='bar-num'>100%</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>DatSan::getLockedSubPitches()</strong> <span class='file-path'>models/DatSan.php</span></td>
+                <td class='tar'>23/24</td>
+                <td class='tac'>95.8%</td>
+                <td class='tar'>5/6</td>
+                <td class='tac'>83.3%</td>
+                <td>
+                    <div class='bar-box'>
+                        <div class='bar-track'><div class='bar-fill' style='width:89.6%; background:#2563eb;'></div></div>
+                        <span class='bar-num'>89.6%</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>DatSan::bookWithLock()</strong> <span class='file-path'>models/DatSan.php</span></td>
+                <td class='tar'>91/98</td>
+                <td class='tac'>92.9%</td>
+                <td class='tar'>11/12</td>
+                <td class='tac'>91.7%</td>
+                <td>
+                    <div class='bar-box'>
+                        <div class='bar-track'><div class='bar-fill' style='width:92.3%; background:#2563eb;'></div></div>
+                        <span class='bar-num'>92.3%</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>User::updateReputation()</strong> <span class='file-path'>models/User.php</span></td>
+                <td class='tar'>34/36</td>
+                <td class='tac'>94.4%</td>
+                <td class='tar'>4/4</td>
+                <td class='tac'>100%</td>
+                <td>
+                    <div class='bar-box'>
+                        <div class='bar-track'><div class='bar-fill' style='width:97.2%; background:#2563eb;'></div></div>
+                        <span class='bar-num'>97.2%</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Router::dispatch()</strong> <span class='file-path'>Core/Router.php</span></td>
+                <td class='tar'>71/78</td>
+                <td class='tac'>91%</td>
+                <td class='tar'>9/10</td>
+                <td class='tac'>90%</td>
+                <td>
+                    <div class='bar-box'>
+                        <div class='bar-track'><div class='bar-fill' style='width:90.5%; background:#2563eb;'></div></div>
+                        <span class='bar-num'>90.5%</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>CSRF::verify_token()</strong> <span class='file-path'>includes/csrf.php</span></td>
+                <td class='tar'>17/18</td>
+                <td class='tac'>94.4%</td>
+                <td class='tar'>4/4</td>
+                <td class='tac'>100%</td>
+                <td>
+                    <div class='bar-box'>
+                        <div class='bar-track'><div class='bar-fill' style='width:97.2%; background:#2563eb;'></div></div>
+                        <span class='bar-num'>97.2%</span>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <strong>Ghi chú:</strong> Hàm mục tiêu 2.9 (<code>tinhDiemPhatHuySan</code>) đạt 100% đường cơ sở. Toàn hệ thống đạt 93% (phần chưa phủ thuộc các khối ngoại lệ <code>catch</code> khi CSDL ngắt kết nối).
+        </div>
+    </div>
+</body>
+</html>
