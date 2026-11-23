@@ -1,9 +1,6 @@
 <?php
-session_start();
-include '../../includes/db.php';
-include '../header_admin.php'; 
-
-require_admin();
+require_once dirname(__DIR__) . '/bootstrap.php';
+include '../header_admin.php';
 
 $min_date = '2025-01-01';
 $filter_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');

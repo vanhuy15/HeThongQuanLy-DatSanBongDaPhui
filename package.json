@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node scripts/start-server.js",
     "stop": "node scripts/stop-server.js",
-    "test:unit": "node scripts/run-php.js tester/01_unit_test/phpunit.phar --do-not-cache-result tester/01_unit_test",
+    "test:unit": "node scripts/run-php.js tester/01_unit_test/phpunit.phar --bootstrap tester/01_unit_test/bootstrap.php --do-not-cache-result tester/01_unit_test",
     "test:api": "npx --yes newman run tester/02_api_test/QuanLySanBong_API.postman_collection.json -e tester/02_api_test/QuanLySanBong.postman_environment.json",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",

@@ -1,6 +1,5 @@
 <?php
-session_start();
-include '../../includes/db.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 include '../header_admin.php'; 
 require_admin();
 
@@ -47,12 +46,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 // ==========================================================
 if (isset($_GET['action']) && $_GET['action'] == 'delete') {
     $khung_gio_id = intval($_GET['khung_gio_id']);
-    $check_fk = $conn->query("SELECT COUNT(*) FROM dat_san WHERE khung_gio_id = $khung_gio_id")->fetch_row()[0];
+    $stmt_chk = $conn->prepare("SELECT COUNT(*) FROM dat_san WHERE khung_gio_id = ?");
+    $stmt_chk->bind_param("i", $khung_gio_id);
+    $stmt_chk->execute();
+    $check_fk = (int)($stmt_chk->get_result()->fetch_row()[0] ?? 0);
+    $stmt_chk->close();
 
     if ($check_fk > 0) {
         $error = "Không thể xóa: Có đơn đặt sân đang dùng khung giờ này.";
     } else {
-        $conn->query("DELETE FROM khung_gio WHERE khung_gio_id = $khung_gio_id");
+        $stmt_del = $conn->prepare("DELETE FROM khung_gio WHERE khung_gio_id = ?");
+        $stmt_del->bind_param("i", $khung_gio_id);
+        $stmt_del->execute();
+        $stmt_del->close();
         $success = "Đã xóa khung giờ.";
         header("Location: index.php?san_id=$san_id_filter&success=".urlencode($success));
         exit();
@@ -89,8 +95,11 @@ $so_luong_moi_trang = 10;
 $trang_hien_tai = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($trang_hien_tai < 1) $trang_hien_tai = 1;
 
-$sql_count = "SELECT COUNT(*) FROM khung_gio WHERE san_id = $san_id_filter";
-$total_records = $conn->query($sql_count)->fetch_row()[0];
+$stmt_cnt = $conn->prepare("SELECT COUNT(*) FROM khung_gio WHERE san_id = ?");
+$stmt_cnt->bind_param("i", $san_id_filter);
+$stmt_cnt->execute();
+$total_records = (int)($stmt_cnt->get_result()->fetch_row()[0] ?? 0);
+$stmt_cnt->close();
 $tong_so_trang = ceil($total_records / $so_luong_moi_trang);
 $offset = ($trang_hien_tai - 1) * $so_luong_moi_trang;
 

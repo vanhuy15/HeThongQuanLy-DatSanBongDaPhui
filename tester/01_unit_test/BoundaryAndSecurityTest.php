@@ -8,33 +8,21 @@ use PHPUnit\Framework\TestCase;
 class BoundaryAndSecurityTest extends TestCase {
 
     /**
-     * Thuật toán tính phạt hủy sân chuẩn theo controllers/UserController.php:
-     * - $diff_hours > 24: 0 điểm
-     * - 12 <= $diff_hours <= 24: -5 điểm
-     * - $diff_hours < 12: -15 điểm
-     */
-    private function calculatePenaltyHours(float $diffHours): int {
-        if ($diffHours > 24.0) {
-            return 0;
-        } elseif ($diffHours >= 12.0) {
-            return 5;
-        } else {
-            return 15;
-        }
-    }
-
-    /**
      * BVA 1: Giá trị biên tại mốc 24 giờ
+     * Gọi trực tiếp nghiệp vụ cốt lõi từ Model DatSan production
      */
     public function testCancellationBoundaryAt24Hours() {
         // Trên 24h một chút (24.01h = 24h + 36 giây): Miễn phạt
-        $this->assertEquals(0, $this->calculatePenaltyHours(24.01));
+        $penalty1 = \Models\DatSan::calculateCancellationPenalty(24.01, true)['penalty_points'];
+        $this->assertEquals(0, $penalty1);
 
         // Đúng chính xác 24.00h: Phạt mức 1 (5 điểm)
-        $this->assertEquals(5, $this->calculatePenaltyHours(24.00));
+        $penalty2 = \Models\DatSan::calculateCancellationPenalty(24.00, true)['penalty_points'];
+        $this->assertEquals(5, $penalty2);
 
         // Dưới 24h một chút (23.99h): Phạt mức 1 (5 điểm)
-        $this->assertEquals(5, $this->calculatePenaltyHours(23.99));
+        $penalty3 = \Models\DatSan::calculateCancellationPenalty(23.99, true)['penalty_points'];
+        $this->assertEquals(5, $penalty3);
     }
 
     /**
@@ -42,13 +30,16 @@ class BoundaryAndSecurityTest extends TestCase {
      */
     public function testCancellationBoundaryAt12Hours() {
         // Trên 12h một chút (12.01h): Phạt mức 1 (5 điểm)
-        $this->assertEquals(5, $this->calculatePenaltyHours(12.01));
+        $penalty1 = \Models\DatSan::calculateCancellationPenalty(12.01, true)['penalty_points'];
+        $this->assertEquals(5, $penalty1);
 
         // Đúng chính xác 12.00h: Phạt mức 1 (5 điểm)
-        $this->assertEquals(5, $this->calculatePenaltyHours(12.00));
+        $penalty2 = \Models\DatSan::calculateCancellationPenalty(12.00, true)['penalty_points'];
+        $this->assertEquals(5, $penalty2);
 
         // Dưới 12h một chút (11.99h): Phạt mức 2 (15 điểm)
-        $this->assertEquals(15, $this->calculatePenaltyHours(11.99));
+        $penalty3 = \Models\DatSan::calculateCancellationPenalty(11.99, true)['penalty_points'];
+        $this->assertEquals(15, $penalty3);
     }
 
     /**
@@ -74,14 +65,15 @@ class BoundaryAndSecurityTest extends TestCase {
 
     /**
      * BVA 4: Giá trị biên kẹp khoảng Điểm Uy Tín (Clamp [0, 100])
+     * Gọi hàm chuẩn từ Model User production
      */
     public function testReputationScoreClampingAtBoundaries() {
         // Biên trên: Khách 99 điểm + 2 điểm đánh giá -> Tối đa 100 điểm, không được vượt 100
-        $newScoreHigh = max(0, min(100, 99 + 2));
+        $newScoreHigh = \Models\User::clampReputation(99 + 2);
         $this->assertEquals(100, $newScoreHigh);
 
         // Biên dưới: Khách 10 điểm bị phạt bùng sân -25 điểm -> Giảm về 0, không được âm
-        $newScoreLow = max(0, min(100, 10 - 25));
+        $newScoreLow = \Models\User::clampReputation(10 - 25);
         $this->assertEquals(0, $newScoreLow);
     }
 

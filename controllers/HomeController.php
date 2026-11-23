@@ -132,9 +132,6 @@ class HomeController extends Controller {
     }
 
     public function index() {
-        // Tự động giải phóng các đơn giữ chỗ đã hết hạn 10 phút
-        Database::cleanupExpiredBookings();
-
         $limit = 8;
         $page  = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
@@ -158,9 +155,6 @@ class HomeController extends Controller {
     }
 
     public function searchAjax() {
-        // Tự động giải phóng các đơn giữ chỗ đã hết hạn 10 phút
-        Database::cleanupExpiredBookings();
-
         $limit = 8;
         $page  = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 

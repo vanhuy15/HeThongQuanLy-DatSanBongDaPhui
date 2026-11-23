@@ -1,21 +1,33 @@
 <?php
+
 namespace Models;
 
 use Config\Database;
 
-class DatSan {
+class DatSan
+{
+
+    public const STATUS_HOLD           = \Core\BookingStatus::CHO_THANH_TOAN;
+    public const STATUS_PENDING        = \Core\BookingStatus::CHO_XAC_NHAN;
+    public const STATUS_CONFIRMED      = \Core\BookingStatus::DA_XAC_NHAN;
+    public const STATUS_REJECTED       = \Core\BookingStatus::DA_TU_CHOI;
+    public const STATUS_REFUND_PENDING = \Core\BookingStatus::CHO_HOAN_TIEN;
+    public const STATUS_REFUNDED       = \Core\BookingStatus::DA_HOAN_TIEN;
+    public const STATUS_CANCELLED      = \Core\BookingStatus::DA_HUY;
 
     /**
      * Dọn dẹp các đơn đặt sân quá hạn thanh toán
      */
-    public static function cleanupExpiredBookings() {
+    public static function cleanupExpiredBookings()
+    {
         Database::cleanupExpiredBookings();
     }
 
     /**
      * Lấy danh sách các sân con đã bị khóa trong khung giờ và ngày cụ thể
      */
-    public static function getLockedSubPitches($khung_gio_id, $ngay_dat) {
+    public static function getLockedSubPitches($khung_gio_id, $ngay_dat)
+    {
         $conn = Database::getConnection();
         $stmt = $conn->prepare("
             SELECT ten_san_con, san_con_khoa 
@@ -52,7 +64,8 @@ class DatSan {
      * Thực hiện đặt sân có cơ chế khóa dòng chống Race Condition
      * @return array ['success' => bool, 'message' => string, 'dat_san_id' => int|null]
      */
-    public static function bookWithLock($nguoi_dung_id, $khung_gio_id, $ngay_dat, $loai_san_dat, $ten_san_con, $san_con_khoa) {
+    public static function bookWithLock($nguoi_dung_id, $khung_gio_id, $ngay_dat, $loai_san_dat, $ten_san_con, $san_con_khoa)
+    {
         $conn = Database::getConnection();
 
         // 1. Kiểm tra điểm uy tín khách hàng
@@ -201,7 +214,7 @@ class DatSan {
                 $san_con = $booking['ten_san_con'];
                 $ngay_dat_fmt = date('d/m/Y', strtotime($booking['ngay_dat']));
                 $gio_da = date('H:i', strtotime($booking['gio_bat_dau'])) . ' - ' . date('H:i', strtotime($booking['gio_ket_thuc']));
-                
+
                 \Models\Notification::create(
                     $nguoi_dung_id,
                     "Vui lòng thanh toán đơn đặt sân #$new_dat_san_id",
@@ -217,7 +230,6 @@ class DatSan {
                 'dat_san_id' => $new_dat_san_id,
                 'redirect' => "index.php?controller=Payment&action=index&dat_san_id=$new_dat_san_id"
             ];
-
         } catch (\Exception $e) {
             $conn->rollback();
             \Core\Logger::error("Lỗi đặt sân bookWithLock: " . $e->getMessage(), [
@@ -236,7 +248,8 @@ class DatSan {
     /**
      * Lấy thông tin đơn đặt sân theo ID kèm chi tiết sân và khung giờ
      */
-    public static function findById($id) {
+    public static function findById($id)
+    {
         $conn = Database::getConnection();
         $sql = "SELECT ds.*, sb.san_id, sb.ten_san, sb.dia_chi, sb.quy_tac_ghep,
                        kg.gio_bat_dau, kg.gio_ket_thuc, kg.gia_tien, kg.gia_tien_san_7,
@@ -259,7 +272,8 @@ class DatSan {
     /**
      * Lấy lịch sử đặt sân của một người dùng
      */
-    public static function getByUserId($user_id, $status_filter = null) {
+    public static function getByUserId($user_id, $status_filter = null)
+    {
         $conn = Database::getConnection();
         $where = "WHERE ds.nguoi_dung_id = ? AND ds.deleted_at IS NULL";
         if (!empty($status_filter)) {
@@ -294,7 +308,8 @@ class DatSan {
     /**
      * Cập nhật trạng thái đơn đặt sân
      */
-    public static function updateStatus($dat_san_id, $trang_thai) {
+    public static function updateStatus($dat_san_id, $trang_thai)
+    {
         $conn = Database::getConnection();
         $stmt = $conn->prepare("UPDATE dat_san SET trang_thai = ? WHERE dat_san_id = ?");
         $stmt->bind_param("si", $trang_thai, $dat_san_id);
@@ -317,7 +332,8 @@ class DatSan {
     /**
      * Xóa vĩnh viễn đơn đặt sân và bản ghi thanh toán liên quan
      */
-    public static function deleteHard($dat_san_id) {
+    public static function deleteHard($dat_san_id)
+    {
         $conn = Database::getConnection();
         // Xóa bản ghi slot CSDL
         $stmt0 = $conn->prepare("DELETE FROM dat_san_slots WHERE dat_san_id = ?");
@@ -342,7 +358,8 @@ class DatSan {
     /**
      * Đếm số đơn chờ xác nhận
      */
-    public static function countPending() {
+    public static function countPending()
+    {
         $conn = Database::getConnection();
         $res = $conn->query("SELECT COUNT(*) FROM dat_san WHERE trang_thai = 'Chờ xác nhận' AND deleted_at IS NULL");
         return (int)($res->fetch_row()[0] ?? 0);
@@ -351,9 +368,82 @@ class DatSan {
     /**
      * Đếm tổng số đơn
      */
-    public static function countTotal() {
+    public static function countTotal()
+    {
         $conn = Database::getConnection();
         $res = $conn->query("SELECT COUNT(*) FROM dat_san WHERE deleted_at IS NULL");
         return (int)($res->fetch_row()[0] ?? 0);
+    }
+
+    /**
+     * Tính toán mức phạt điểm uy tín khi hủy đơn
+     */
+    public static function calculateCancellationPenalty(float $hoursUntilMatch, bool $isConfirmed, string $paymentMethod = 'tien_mat'): array {
+        $penaltyPoints = 0;
+        $penaltyMsg = "";
+        if ($isConfirmed) {
+            if ($hoursUntilMatch < 12.0) {
+                $penaltyPoints = 15;
+                $penaltyMsg = " Bạn bị trừ 15 điểm uy tín do hủy sân sát giờ (dưới 12 tiếng).";
+            } elseif ($hoursUntilMatch <= 24.0) {
+                $penaltyPoints = 5;
+                $penaltyMsg = " Bạn bị trừ 5 điểm uy tín do hủy sân sát ngày (dưới 24 tiếng).";
+            }
+        }
+        return [
+            'penalty_points' => $penaltyPoints,
+            'penalty_msg' => $penaltyMsg
+        ];
+    }
+
+    /**
+     * Kiểm tra xung đột khóa chéo sân ghép đa năng
+     */
+    public static function checkCompoundPitchConflict(string $targetSanCon, ?string $targetSanConKhoa, array $existingBookings): bool {
+        foreach ($existingBookings as $b) {
+            $bookedSanCon = $b['ten_san_con'] ?? '';
+            $bookedKhoa = $b['san_con_khoa'] ?? null;
+
+            if ($targetSanCon === $bookedSanCon) {
+                return true;
+            }
+
+            if (!empty($targetSanConKhoa)) {
+                $lockedList = array_map('trim', explode(',', $targetSanConKhoa));
+                foreach ($lockedList as $part) {
+                    if (stripos($bookedSanCon, $part) !== false) {
+                        return true;
+                    }
+                }
+            }
+
+            if (!empty($bookedKhoa)) {
+                $lockedList = array_map('trim', explode(',', $bookedKhoa));
+                foreach ($lockedList as $part) {
+                    if (stripos($targetSanCon, $part) !== false) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Lấy số giây giữ chỗ còn lại của đơn Chờ thanh toán
+     */
+    public static function getRemainingHoldTime(string $createdAt, int $holdDurationSeconds = 600): int {
+        $elapsed = time() - strtotime($createdAt);
+        return max(0, $holdDurationSeconds - $elapsed);
+    }
+
+    /**
+     * Kiểm tra đơn đã hết hạn giữ chỗ hay chưa
+     */
+    public static function isHoldExpired(string $createdAt, string $status, int $holdDurationSeconds = 600): bool {
+        if ($status !== 'Chờ thanh toán') {
+            return false;
+        }
+        return (time() - strtotime($createdAt)) > $holdDurationSeconds;
     }
 }

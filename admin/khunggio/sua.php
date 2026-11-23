@@ -1,8 +1,6 @@
 <?php
-session_start();
-include '../../includes/db.php';
-include '../header_admin.php'; 
-require_admin();
+require_once dirname(__DIR__) . '/bootstrap.php';
+include '../header_admin.php';
 
 $error = $success = "";
 $khung_gio_id = isset($_GET['khung_gio_id']) ? intval($_GET['khung_gio_id']) : 0;

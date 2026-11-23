@@ -1,9 +1,6 @@
 <?php
-session_start();
-include '../../includes/db.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 include '../header_admin.php';
-
-require_admin();
 
 // Thống kê người dùng
 $total_users = $conn->query("SELECT COUNT(*) FROM nguoi_dung WHERE vai_tro = 'khach_hang'")->fetch_row()[0];

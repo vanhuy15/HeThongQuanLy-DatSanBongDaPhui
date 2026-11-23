@@ -10,7 +10,7 @@ module.exports = defineConfig({
     ['html', { outputFolder: 'tester/03_e2e_ui_test/playwright-report', open: 'never' }]
   ],
   use: {
-    baseURL: 'http://localhost/quanlysanbong/',
+    baseURL: process.env.BASE_URL || 'http://localhost/quanlysanbong/',
     headless: true,
     screenshot: 'on',
     trace: 'on',

@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers;
 
 use Core\Controller;
@@ -6,25 +7,26 @@ use Config\Database;
 use Models\User;
 use Models\DatSan;
 
-class UserController extends Controller {
-    
-    public function profile() {
+class UserController extends Controller
+{
+
+    public function profile()
+    {
         if (!isset($_SESSION['nguoi_dung_id']) || ($_SESSION['vai_tro'] ?? '') !== 'khach_hang') {
             $this->redirect('index.php?controller=Auth&action=login');
         }
-        
+
         $nguoi_dung_id = $_SESSION['nguoi_dung_id'];
         $conn = Database::getConnection();
-        
-        require_once __DIR__ . '/../includes/db.php';
-        syncCompletedMatchesReputation($conn, $nguoi_dung_id);
+
+        User::syncCompletedMatches($conn, $nguoi_dung_id);
 
         $stmt = $conn->prepare("SELECT * FROM nguoi_dung WHERE nguoi_dung_id = ?");
         $stmt->bind_param("i", $nguoi_dung_id);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
         $stmt->close();
-        
+
         $info_success = null;
         $info_error = null;
         $password_success = null;
@@ -48,20 +50,20 @@ class UserController extends Controller {
                 if (!is_dir($avatar_dir)) {
                     mkdir($avatar_dir, 0777, true);
                 }
-                
+
                 $new_filename = 'avatar_' . $nguoi_dung_id . '_' . time() . '.' . $ext;
                 $target_path = $avatar_dir . $new_filename;
                 $db_path = 'images/avatar/' . $new_filename;
-                
+
                 if (move_uploaded_file($file['tmp_name'], $target_path)) {
                     $av_stmt = $conn->prepare("UPDATE nguoi_dung SET avatar = ? WHERE nguoi_dung_id = ?");
                     $av_stmt->bind_param("si", $db_path, $nguoi_dung_id);
                     $av_stmt->execute();
                     $av_stmt->close();
-                    
+
                     $_SESSION['avatar'] = $db_path;
                     $user['avatar'] = $db_path;
-                    
+
                     if (!empty($_POST['ajax_upload'])) {
                         header('Content-Type: application/json');
                         echo json_encode(['success' => true, 'avatar' => $db_path, 'message' => 'Cập nhật ảnh đại diện thành công!']);
@@ -85,7 +87,7 @@ class UserController extends Controller {
                 $info_error = "Định dạng ảnh không hợp lệ hoặc dung lượng vượt quá 5MB.";
             }
         }
-        
+
         // 1. Form Cập nhật thông tin cá nhân riêng biệt
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['update_profile_info']) || (isset($_POST['update_profile']) && empty($_POST['mk_cu']) && empty($_POST['mk_moi'])))) {
             $ho_ten = trim($_POST['ho_ten'] ?? '');
@@ -178,13 +180,13 @@ class UserController extends Controller {
         $stat_stmt->execute();
         $user_stats = $stat_stmt->get_result()->fetch_assoc();
         $stat_stmt->close();
-        
+
         $stmt_ls = $conn->prepare("SELECT * FROM lich_su_uy_tin WHERE nguoi_dung_id = ? ORDER BY lich_su_id DESC LIMIT 100");
         $stmt_ls->bind_param("i", $nguoi_dung_id);
         $stmt_ls->execute();
         $reputation_history = $stmt_ls->get_result();
         $stmt_ls->close();
-        
+
         $this->render('user/profile', [
             'user' => $user,
             'user_stats' => $user_stats,
@@ -197,20 +199,21 @@ class UserController extends Controller {
             'error' => $info_error ?: $password_error
         ]);
     }
-    
-    public function history() {
+
+    public function history()
+    {
         if (!isset($_SESSION['nguoi_dung_id']) || ($_SESSION['vai_tro'] ?? '') !== 'khach_hang') {
             $this->redirect('index.php?controller=Auth&action=login');
         }
-        
+
         $nguoi_dung_id = $_SESSION['nguoi_dung_id'];
         $conn = Database::getConnection();
-        
+
         // Date & Status filter
         $tu_ngay = $_GET['tu_ngay'] ?? '';
         $den_ngay = $_GET['den_ngay'] ?? '';
         $trang_thai = $_GET['trang_thai'] ?? '';
-        
+
         $min_date = '2025-01-01';
         if (!empty($tu_ngay) && $tu_ngay < $min_date) {
             $tu_ngay = $min_date;
@@ -218,18 +221,18 @@ class UserController extends Controller {
         if (!empty($den_ngay) && $den_ngay < $min_date) {
             $den_ngay = $min_date;
         }
-        
+
         // Pagination
         $limit = 10;
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) $page = 1;
         $offset = ($page - 1) * $limit;
-        
+
         // Base queries
         $where_clause = "WHERE ds.nguoi_dung_id = ? AND ds.deleted_at IS NULL";
         $params = [$nguoi_dung_id];
         $types = "i";
-        
+
         if (!empty($tu_ngay)) {
             $where_clause .= " AND DATE(ds.ngay_dat) >= ?";
             $params[] = $tu_ngay;
@@ -245,7 +248,7 @@ class UserController extends Controller {
             $params[] = $trang_thai;
             $types .= "s";
         }
-        
+
         // Get total records
         $count_sql = "SELECT COUNT(*) as total FROM dat_san ds $where_clause";
         $count_stmt = $conn->prepare($count_sql);
@@ -253,7 +256,7 @@ class UserController extends Controller {
         $count_stmt->execute();
         $total_records = $count_stmt->get_result()->fetch_assoc()['total'];
         $total_pages = ceil($total_records / $limit);
-        
+
         // Get paginated records
         $sql = "SELECT ds.*, sb.san_id, sb.ten_san, kg.gio_bat_dau, kg.gio_ket_thuc, kg.gia_tien, kg.gia_tien_san_7, 
                        tt.phuong_thuc, tt.trang_thai as tt_trang_thai,
@@ -266,21 +269,21 @@ class UserController extends Controller {
                 $where_clause
                 ORDER BY ds.ngay_dat DESC, kg.gio_bat_dau DESC
                 LIMIT ? OFFSET ?";
-                
+
         $params[] = $limit;
         $params[] = $offset;
         $types .= "ii";
-        
+
         $stmt = $conn->prepare($sql);
         $stmt->bind_param($types, ...$params);
         $stmt->execute();
         $res = $stmt->get_result();
-        
+
         $history = [];
-        while($row = $res->fetch_assoc()) {
+        while ($row = $res->fetch_assoc()) {
             $history[] = $row;
         }
-        
+
         $this->render('user/history', [
             'history' => $history,
             'page' => $page,
@@ -291,7 +294,8 @@ class UserController extends Controller {
         ]);
     }
 
-    public function cancelBooking() {
+    public function cancelBooking()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_SESSION['nguoi_dung_id'])) {
             $this->jsonResponse(['success' => false, 'message' => 'Vui lòng đăng nhập để thực hiện.']);
         }
@@ -337,18 +341,10 @@ class UserController extends Controller {
         }
 
         // --- Logic Trừ Điểm Uy Tín (Chỉ áp dụng nếu đơn đã được xác nhận) ---
-        $penalty_points = 0;
-        $penalty_msg = "";
-        if ($booking['trang_thai'] === 'Đã xác nhận') {
-            $hours_until_match = ($match_start_time - time()) / 3600;
-            if ($hours_until_match <= 12) {
-                $penalty_points = 15;
-                $penalty_msg = " Bạn bị trừ 15 điểm uy tín do hủy sân sát giờ (dưới 12 tiếng).";
-            } elseif ($hours_until_match <= 24) {
-                $penalty_points = 5;
-                $penalty_msg = " Bạn bị trừ 5 điểm uy tín do hủy sân sát ngày (dưới 24 tiếng).";
-            }
-        }
+        $hours_until_match = ($match_start_time - time()) / 3600;
+        $penalty_data = \Models\DatSan::calculateCancellationPenalty($hours_until_match, $booking['trang_thai'] === 'Đã xác nhận');
+        $penalty_points = $penalty_data['penalty_points'];
+        $penalty_msg = $penalty_data['penalty_msg'];
 
         if ($penalty_points > 0) {
             User::updateReputation($nguoi_dung_id, -$penalty_points, 'huy_san', "Hủy sân sát giờ thi đấu đơn #$dat_san_id");
@@ -404,7 +400,7 @@ class UserController extends Controller {
                     "index.php?controller=User&action=history"
                 );
 
-                $msg = ($booking['trang_thai'] === 'Chờ hoàn tiền') 
+                $msg = ($booking['trang_thai'] === 'Chờ hoàn tiền')
                     ? 'Thông tin nhận hoàn tiền đã được cập nhật thành công! Quản trị viên sẽ sớm chuyển khoản cho bạn.'
                     : 'Yêu cầu hủy sân và hoàn tiền đã được gửi thành công! Quản trị viên sẽ chuyển hoàn về STK của bạn sớm nhất. Sân đã được mở lại.' . $penalty_msg;
 

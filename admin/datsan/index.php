@@ -1,9 +1,6 @@
 <?php
-session_start();
-include '../../includes/db.php';
-include '../header_admin.php'; 
-
-require_admin();
+require_once dirname(__DIR__) . '/bootstrap.php';
+include '../header_admin.php';
 
 // --- 1. BỘ LỌC NGÀY VÀ TRẠNG THÁI ---
 $status_filter = isset($_GET['status']) ? $_GET['status'] : 'tat_ca';

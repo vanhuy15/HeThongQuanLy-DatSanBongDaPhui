@@ -1,9 +1,6 @@
 <?php
 ob_start();
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once '../../includes/db.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 require_admin();
 
 $san_id = intval($_GET['id'] ?? $_GET['san_id'] ?? 0);

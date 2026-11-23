@@ -1,8 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/bootstrap.php';
 require_admin();
 
 // Đếm số đơn chờ xác nhận để hiện badge trên sidebar và chuông thông báo

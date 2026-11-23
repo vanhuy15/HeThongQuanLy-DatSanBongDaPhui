@@ -46,9 +46,6 @@ class DatSanController extends Controller {
         $view_mode = $_GET['mode'] ?? 'san_5'; // 'san_5' hoặc 'san_7'
         
         $conn = Database::getConnection();
-
-        // Tự động giải phóng các đơn giữ chỗ đã hết hạn 10 phút
-        Database::cleanupExpiredBookings();
         
         $san_info_stmt = $conn->prepare("SELECT ten_san, so_luong, loai_san, quy_tac_ghep FROM san_bong WHERE san_id = ?");
         $san_info_stmt->bind_param("i", $san_id);

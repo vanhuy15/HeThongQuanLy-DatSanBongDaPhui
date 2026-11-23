@@ -1,6 +1,5 @@
 <?php
-session_start();
-include '../../includes/db.php'; 
+require_once dirname(__DIR__) . '/bootstrap.php'; 
 require_once '../../includes/send_mail.php';
 require_once '../../includes/email_templates.php';
 
@@ -82,7 +81,11 @@ if ($dat_san_id > 0 && !empty($trang_thai_moi)) {
                 $p_short = preg_replace('/^Sân bóng đá\s*/iu', '', $ten_san);
                 $p_short = str_replace('Trường Đại Học Sư Phạm-Đà Nẵng', 'ĐH Sư Phạm', $p_short);
 
-                $current_score = (int)($conn->query("SELECT diem_uy_tin FROM nguoi_dung WHERE nguoi_dung_id = $user_id")->fetch_row()[0] ?? 100);
+                $stmt_cur = $conn->prepare("SELECT diem_uy_tin FROM nguoi_dung WHERE nguoi_dung_id = ?");
+                $stmt_cur->bind_param("i", $user_id);
+                $stmt_cur->execute();
+                $current_score = (int)($stmt_cur->get_result()->fetch_row()[0] ?? 100);
+                $stmt_cur->close();
                 $stmt_log = $conn->prepare("INSERT INTO lich_su_uy_tin (nguoi_dung_id, so_diem, diem_sau_cung, loai_hanh_dong, ghi_chu, ngay_tao) VALUES (?, 5, ?, 'hoan_tat_dat_san', ?, ?)");
                 $log_desc = "Hoàn thành đơn #$dat_san_id ($p_short)";
                 $stmt_log->bind_param("iiss", $user_id, $current_score, $log_desc, $match_end_time);
@@ -122,7 +125,11 @@ if ($dat_san_id > 0 && !empty($trang_thai_moi)) {
             $p_short = preg_replace('/^Sân bóng đá\s*/iu', '', $ten_san);
             $p_short = str_replace('Trường Đại Học Sư Phạm-Đà Nẵng', 'ĐH Sư Phạm', $p_short);
 
-            $current_score = (int)($conn->query("SELECT diem_uy_tin FROM nguoi_dung WHERE nguoi_dung_id = $user_id")->fetch_row()[0] ?? 0);
+            $stmt_cur2 = $conn->prepare("SELECT diem_uy_tin FROM nguoi_dung WHERE nguoi_dung_id = ?");
+            $stmt_cur2->bind_param("i", $user_id);
+            $stmt_cur2->execute();
+            $current_score = (int)($stmt_cur2->get_result()->fetch_row()[0] ?? 0);
+            $stmt_cur2->close();
             $stmt_log = $conn->prepare("INSERT INTO lich_su_uy_tin (nguoi_dung_id, so_diem, diem_sau_cung, loai_hanh_dong, ghi_chu) VALUES (?, -25, ?, 'bung_san', ?)");
             $log_desc = "Bùng sân đơn #$dat_san_id ($p_short)";
             $stmt_log->bind_param("iis", $user_id, $current_score, $log_desc);

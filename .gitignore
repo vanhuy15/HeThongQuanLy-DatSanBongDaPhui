@@ -63,11 +63,17 @@ node_modules/
 playwright-report/
 test-results/
 .phpunit.result.cache
+.phpunit.cache/
 tester/**/playwright-report/
 tester/**/test-results/
 tester/**/.phpunit.result.cache
+tester/**/.phpunit.cache/
+tester/06_code_coverage/report/
 tester/preview_*.png
 *.jtl
 report_read/
 report_race/
+*.docx
+*.pdf
+
 

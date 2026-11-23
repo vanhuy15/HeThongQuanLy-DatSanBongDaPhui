@@ -1,6 +1,5 @@
 <?php
-session_start();
-include '../../includes/db.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 require_admin();
 

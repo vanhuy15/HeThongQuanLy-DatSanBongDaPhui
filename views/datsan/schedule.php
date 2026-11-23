@@ -1,8 +1,10 @@
 <?php
+
 /**
  * View Partial: Schedule Table & Pitch Map
  * Rendered by DatSanController::getSchedule()
  */
+
 use Models\DatSan;
 ?>
 <!-- Header & Mode Switcher -->
@@ -34,7 +36,7 @@ use Models\DatSan;
         </tr>
     </thead>
     <tbody>
-        <?php while ($kg = $khung_gio_list->fetch_assoc()) : 
+        <?php while ($kg = $khung_gio_list->fetch_assoc()) :
             // Lấy tất cả các sân con bị khóa trong khung giờ này qua Model
             $locked_sub_pitches = DatSan::getLockedSubPitches($kg['khung_gio_id'], $ngay_dat);
 
@@ -44,11 +46,7 @@ use Models\DatSan;
             $is_slot_expired = ($slot_start_time <= (time() + $buffer_seconds));
 
             // Giá tiền theo chế độ
-            if ($view_mode === 'san_7') {
-                $gia_hien_thi = !empty($kg['gia_tien_san_7']) ? $kg['gia_tien_san_7'] : ($kg['gia_tien'] * ($quy_tac_ghep > 0 ? $quy_tac_ghep : 1.6));
-            } else {
-                $gia_hien_thi = $kg['gia_tien'];
-            }
+            $gia_hien_thi = \Models\SanBong::calculateDisplayPrice($kg['gia_tien'], $view_mode, (int)$quy_tac_ghep, $kg['gia_tien_san_7'] ?? null);
 
             // Tính số sân còn lại theo chế độ
             $has_available_slot = false;
@@ -67,7 +65,7 @@ use Models\DatSan;
                             for ($i = 0; $i < $tong_so_san; $i++) {
                                 $pitch_name = $sub_pitches[$i] ?? ($i + 1);
                                 $is_booked = in_array($pitch_name, $locked_sub_pitches);
-                                
+
                                 if ($is_booked) {
                                     // SÂN 5 - ĐÃ ĐẶT: đỏ, X mark
                                     $booked_style = $is_slot_expired ? "style='cursor: not-allowed; opacity: 0.5; pointer-events: none;'" : "";
@@ -135,4 +133,3 @@ use Models\DatSan;
         <?php endwhile; ?>
     </tbody>
 </table>
-

@@ -1,14 +1,17 @@
 <?php
+
 namespace Models;
 
 use Config\Database;
 
-class SanBong {
+class SanBong
+{
 
     /**
      * Lấy toàn bộ danh sách sân bóng
      */
-    public static function getAll() {
+    public static function getAll()
+    {
         $conn = Database::getConnection();
         $res = $conn->query("SELECT * FROM san_bong ORDER BY ten_san ASC");
         $list = [];
@@ -21,7 +24,8 @@ class SanBong {
     /**
      * Lấy thông tin sân bóng theo ID
      */
-    public static function findById($id) {
+    public static function findById($id)
+    {
         $conn = Database::getConnection();
         $stmt = $conn->prepare("SELECT * FROM san_bong WHERE san_id = ?");
         $stmt->bind_param("i", $id);
@@ -34,7 +38,8 @@ class SanBong {
     /**
      * Lấy danh sách sân kèm giá thấp nhất để hiển thị trang chủ
      */
-    public static function getPitchesWithMinPrice() {
+    public static function getPitchesWithMinPrice()
+    {
         $conn = Database::getConnection();
         $sql = "SELECT sb.*, MIN(kg.gia_tien) AS gia_thap_nhat 
                 FROM san_bong sb 
@@ -52,7 +57,8 @@ class SanBong {
     /**
      * Đếm tổng số sân bóng
      */
-    public static function countAll() {
+    public static function countAll()
+    {
         $conn = Database::getConnection();
         $res = $conn->query("SELECT COUNT(*) FROM san_bong");
         return (int)($res->fetch_row()[0] ?? 0);
@@ -61,7 +67,8 @@ class SanBong {
     /**
      * Thêm sân bóng mới
      */
-    public static function create($ten_san, $dia_chi, $so_luong, $loai_san, $quy_tac_ghep, $gia_san_7 = null, $latitude = null, $longitude = null) {
+    public static function create($ten_san, $dia_chi, $so_luong, $loai_san, $quy_tac_ghep, $gia_san_7 = null, $latitude = null, $longitude = null)
+    {
         $conn = Database::getConnection();
         $stmt = $conn->prepare("INSERT INTO san_bong (ten_san, dia_chi, so_luong, loai_san, quy_tac_ghep, gia_san_7, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("ssisidss", $ten_san, $dia_chi, $so_luong, $loai_san, $quy_tac_ghep, $gia_san_7, $latitude, $longitude);
@@ -74,7 +81,8 @@ class SanBong {
     /**
      * Cập nhật thông tin sân bóng
      */
-    public static function update($san_id, $ten_san, $dia_chi, $so_luong, $loai_san, $quy_tac_ghep, $gia_san_7 = null, $latitude = null, $longitude = null) {
+    public static function update($san_id, $ten_san, $dia_chi, $so_luong, $loai_san, $quy_tac_ghep, $gia_san_7 = null, $latitude = null, $longitude = null)
+    {
         $conn = Database::getConnection();
         $stmt = $conn->prepare("UPDATE san_bong SET ten_san = ?, dia_chi = ?, so_luong = ?, loai_san = ?, quy_tac_ghep = ?, gia_san_7 = ?, latitude = ?, longitude = ? WHERE san_id = ?");
         $stmt->bind_param("ssisidssi", $ten_san, $dia_chi, $so_luong, $loai_san, $quy_tac_ghep, $gia_san_7, $latitude, $longitude, $san_id);
@@ -86,7 +94,8 @@ class SanBong {
     /**
      * Xóa sân bóng
      */
-    public static function delete($san_id) {
+    public static function delete($san_id)
+    {
         $conn = Database::getConnection();
         $stmt = $conn->prepare("DELETE FROM san_bong WHERE san_id = ?");
         $stmt->bind_param("i", $san_id);
@@ -94,5 +103,18 @@ class SanBong {
         $stmt->close();
         return $res;
     }
-}
 
+    /**
+     * Tính toán giá hiển thị dựa trên chế độ xem (sân 5 hoặc sân 7), quy tắc ghép và đơn giá
+     */
+    public static function calculateDisplayPrice(float|int $giaGoc, string $viewMode, int $quyTacGhep = 0, float|int|null $giaTienSan7 = null): float|int {
+        if ($viewMode === 'san_7') {
+            if (!empty($giaTienSan7) && $giaTienSan7 > 0) {
+                return (int)$giaTienSan7;
+            }
+            $heSo = ($quyTacGhep > 0) ? $quyTacGhep : 1.6;
+            return (int)($giaGoc * $heSo);
+        }
+        return (int)$giaGoc;
+    }
+}

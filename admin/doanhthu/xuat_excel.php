@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once __DIR__ . '/../../includes/db.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 // Kiểm tra quyền admin
 require_admin();

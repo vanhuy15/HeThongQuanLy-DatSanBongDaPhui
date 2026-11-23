@@ -1,11 +1,13 @@
 <?php
+
 use PHPUnit\Framework\TestCase;
 
 /**
  * Thuật toán 5: Kiểm thử Chuẩn hóa & Sinh Mã VietQR Tự Động (VietQR Generation)
  * Nghiệp vụ chi tiết tại views/payment/checkout.php & controllers/PaymentController.php
  */
-class VietQRFormatTest extends TestCase {
+class VietQRFormatTest extends TestCase
+{
 
     private const BANK_ID = 'MB';
     private const ACCOUNT_NO = '1111000050174';
@@ -15,16 +17,18 @@ class VietQRFormatTest extends TestCase {
     /**
      * Hàm sinh URL VietQR theo đúng chuẩn đang sử dụng trong views/payment/checkout.php
      */
-    private function generateVietQrUrl(int $bookingId, int $amount): string {
+    private function generateVietQrUrl(int $bookingId, int $amount): string
+    {
         $encodedDesc = urlencode("DATSAN " . $bookingId);
         $encodedName = urlencode(self::ACCOUNT_NAME);
         return "https://img.vietqr.io/image/" . self::BANK_ID . "-" . self::ACCOUNT_NO . "-" . self::TEMPLATE . ".png"
-             . "?amount=" . $amount
-             . "&addInfo=" . $encodedDesc
-             . "&accountName=" . $encodedName;
+            . "?amount=" . $amount
+            . "&addInfo=" . $encodedDesc
+            . "&accountName=" . $encodedName;
     }
 
-    public function testVietQrUrlStructureMatchesStandard() {
+    public function testVietQrUrlStructureMatchesStandard()
+    {
         $bookingId = 150;
         $amount = 250000;
 
@@ -43,7 +47,8 @@ class VietQRFormatTest extends TestCase {
         $this->assertStringContainsString('accountName=HOANG+VAN+HUY', $url);
     }
 
-    public function testAmountMustBePositiveInteger() {
+    public function testAmountMustBePositiveInteger()
+    {
         $validAmounts = [150000, 250000, 400000, 1000000];
         foreach ($validAmounts as $amt) {
             $this->assertGreaterThan(0, $amt, "Số tiền thanh toán phải lớn hơn 0");
@@ -51,7 +56,8 @@ class VietQRFormatTest extends TestCase {
         }
     }
 
-    public function testTransferSyntaxPattern() {
+    public function testTransferSyntaxPattern()
+    {
         $bookingId = 999;
         $syntax = "DATSAN " . $bookingId;
 
@@ -60,9 +66,9 @@ class VietQRFormatTest extends TestCase {
         $this->assertEquals(1, $isMatched, "Cú pháp chuyển khoản phải có dạng 'DATSAN <id>'");
     }
 
-    public function testBankAccountDetailsConsistency() {
+    public function testBankAccountDetailsConsistency()
+    {
         $this->assertEquals('1111000050174', self::ACCOUNT_NO, "Số tài khoản MB Bank phải đồng bộ 1111000050174");
         $this->assertEquals('HOANG VAN HUY', self::ACCOUNT_NAME, "Chủ tài khoản phải là HOANG VAN HUY");
     }
 }
-

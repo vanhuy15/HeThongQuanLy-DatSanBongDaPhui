@@ -1,7 +1,5 @@
 <?php
-session_start();
-include __DIR__ . '/../includes/db.php';
-include __DIR__ . '/header_admin.php'; 
+require_once __DIR__ . '/header_admin.php'; 
 
 require_admin();
 

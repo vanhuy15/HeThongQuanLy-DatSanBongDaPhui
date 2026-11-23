@@ -20,9 +20,12 @@ if (php_sapi_name() !== 'cli' && empty($_GET['cron_key'])) {
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../core/Logger.php';
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../services/BookingCleanupService.php';
 
 use Config\Database;
 use Core\Logger;
+use Services\BookingCleanupService;
 
 $startTime = microtime(true);
 $timestamp = date('Y-m-d H:i:s');
@@ -49,8 +52,8 @@ try {
     $expiredBookings = $stmtFind ? $stmtFind->fetch_all(MYSQLI_ASSOC) : [];
     $totalExpired = count($expiredBookings);
 
-    // 2. Chạy phương thức cleanup tập trung
-    Database::cleanupExpiredBookings();
+    // 2. Chạy phương thức cleanup tập trung qua Service chuyên dụng
+    $stats = \Services\BookingCleanupService::runCleanup($conn);
 
     // 3. Đếm số slot đã được giải phóng
     $stmtSlots = $conn->query("
