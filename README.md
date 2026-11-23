@@ -57,63 +57,45 @@ Dự án **Hệ Thống Quản Lý Sân Bóng Đá Phủi Đà Nẵng** ra đờ
 
 ---
 
-## 📋 TỔNG HỢP CHỨC NĂNG HỆ THỐNG
+## 📋 TỔNG HỢP 14 CHỨC NĂNG HỆ THỐNG
 
-### 👥 1. Phân Hệ Khách Hàng (Client Portal)
-* **Khám phá & Tìm kiếm:** Tìm kiếm thời gian thực (Debounce Search), lọc đa tiêu chí theo loại sân (Sân 5 / Sân 7) và khoảng giá linh hoạt.
-* **Sơ đồ chọn sân trực quan:** Bản đồ sân bóng 2D, tra cứu lịch theo ngày và khung giờ thời gian thực qua AJAX.
-* **Cổng thanh toán đa dạng:** Tùy chọn Tiền mặt tại sân hoặc Quét mã VietQR tiện lợi.
-* **Lịch sử & Hủy đơn hoàn tiền:** Theo dõi toàn bộ lịch sử đơn đặt, gửi yêu cầu hủy đơn và cung cấp STK nhận hoàn tiền qua ngân hàng.
-* **Hồ sơ cá nhân & Bảng điểm uy tín:** Theo dõi thứ hạng uy tín (VIP, Tiêu chuẩn, Cảnh báo, Khóa), xem chi tiết lịch sử biến động điểm.
-* **Đánh giá & Xếp hạng:** Đánh giá chất lượng mặt cỏ, ánh sáng, dịch vụ từ 1 đến 5 sao (+2 điểm uy tín).
+Dự án được xây dựng với đầy đủ 14 chức năng chuẩn đáp ứng toàn diện nhu cầu của Khách hàng và Ban quản lý:
 
-### 🛠️ 2. Phân Hệ Quản Trị Viên (Admin Portal)
-* **KPI Dashboard thời gian thực:** Thống kê doanh thu 7 ngày qua biểu đồ trực quan, theo dõi đơn chờ duyệt, tổng số sân và tỷ lệ lấp đầy.
-* **Quản lý Đặt sân tập trung:** Duyệt đơn, từ chối đơn, xác nhận thu tiền mặt, báo cáo khách bùng sân, quét mã VietQR hoàn tiền cho khách.
-* **Quản lý Sân bóng & Cấu hình ghép:** Thêm mới, chỉnh sửa thông tin sân, cấu hình quan hệ ghép sân 5 và sân 7 linh hoạt.
-* **Quản lý Khung giờ & Bảng giá:** Thiết lập bảng giá riêng cho giờ vàng/cuối tuần, tùy chỉnh giá sân ghép.
-* **Quản lý Người dùng:** Theo dõi hành vi khách hàng, can thiệp khôi phục hoặc điều chỉnh điểm uy tín thủ công.
-* **Báo cáo Doanh thu & Xuất Excel:** Lọc doanh thu theo ngày/tháng/sân và xuất báo cáo bảng tính Excel chuẩn định dạng.
+### 👥 Phân Hệ Khách Hàng (Client Portal)
+1. **Chức năng Đăng ký / Đăng nhập / Đăng xuất:** Xác thực người dùng an toàn, mã hóa mật khẩu BCRYPT, so sánh nhị phân `BINARY` phân biệt chính xác chữ hoa/thường (`admin15 !== ADMIN15`), Anti-CSRF Token 64-hex chống giả mạo request.
+2. **Tìm kiếm và Lọc sân:** Tìm kiếm thời gian thực (Debounce Search) theo tên sân hoặc địa chỉ không cần tải lại trang; bộ lọc nâng cao đa tiêu chí theo quy mô (Sân 5 / Sân 7) và thanh trượt khoảng giá thuê.
+3. **Xem sân, Tra cứu lịch và Sơ đồ 2D:** Bản đồ sân bóng 2D trực quan với 3 trạng thái màu (xanh: trống, vàng: giữ chỗ, đỏ: đã đặt); tra cứu lịch AJAX theo ngày (giới hạn từ 2025); khoảng đệm 5 phút chuẩn bị sân (Lead Time Buffer) tự động làm mờ và khóa các khung giờ đã qua hoặc sát giờ đá.
+4. **Đặt sân và Chống trùng (Double-Booking & Giữ chỗ 10 phút):** Giao dịch CSDL kết hợp khóa dòng `SELECT ... FOR UPDATE` và ràng buộc duy nhất `active_key` triệt tiêu 100% rủi ro đặt trùng; bộ đếm giữ chỗ 10 phút với cơ chế tự động hủy và giải phóng slot CSDL (`released`) để nhường sân cho người khác.
+5. **Ghép sân 5 và 7 (Khóa chéo đa năng):** Thuật toán khóa chéo hai chiều linh hoạt (`san_con_khoa = 'A,B'`); khi sân 7 được đặt, toàn bộ các sân 5 con thành phần tự động khóa và ngược lại.
+6. **Thanh toán Tiền mặt và VietQR (Tích hợp Webhook SePAY):** Tự động sinh mã VietQR Napas 247 MB Bank điền sẵn số tiền và nội dung `DATSAN <id>`; tích hợp Webhook SePAY tự động nhận diện giao dịch và duyệt đơn tức thì theo thời gian thực (hỗ trợ cả môi trường Live và Sandbox Mock 0đ); ẩn nút xác nhận thủ công ở tab VietQR.
+7. **Điểm uy tín và Chế tài bùng sân:** Thang điểm tín nhiệm chuẩn [0, 100]; tự động cộng điểm khi hoàn thành trận (+5đ) hoặc gửi đánh giá (+2đ); trừ 25đ khi bùng sân; tự động khóa phương thức tiền mặt nếu điểm $< 60$đ và khóa quyền đặt sân nếu điểm $< 40$đ.
+8. **Hủy đơn và Hoàn tiền:** Quy tắc phạt điểm hủy sân minh bạch theo mốc giờ (>24h: 0đ, 12-24h: -5đ, <12h: -15đ); bắt buộc cung cấp STK ngân hàng trước khi hủy đơn chuyển khoản; lập tức giải phóng slot CSDL; tự động chuyển các đơn VietQR chưa duyệt quá giờ thi đấu sang `Chờ hoàn tiền`.
+
+### 🛠️ Phân Hệ Quản Trị Viên (Admin Portal)
+9. **ADM Đăng nhập và Phân quyền (RBAC):** Cơ chế kiểm soát truy cập phân quyền nghiêm ngặt, chặn đứng mọi truy cập trái phép từ khách vãng lai và người dùng thông thường vào phân hệ quản trị `/admin/`.
+10. **ADM Quản lý Sân bóng và Cấu hình ghép:** Thêm mới, chỉnh sửa thông tin và xóa sân bóng; kiểm soát ràng buộc toàn vẹn ngăn xóa sân đang có đơn đặt; cấu hình số lượng sân con và quan hệ ghép sân 5 thành sân 7 linh hoạt.
+11. **ADM Khung giờ và Bảng giá:** Quản lý danh mục khung giờ hoạt động; cấu hình bảng giá riêng cho các khung giờ vàng, tỷ lệ phụ thu ngày cuối tuần và biểu giá riêng cho sân 7 ghép.
+12. **ADM Quản lý Đặt sân & Hoàn tiền:** Giao diện quản lý đặt sân tinh gọn, tối ưu trải nghiệm; duyệt đơn, từ chối đơn giải phóng lịch, xác nhận thu tiền mặt tại sân, báo bùng sân trừ điểm; hiển thị mã VietQR chứa sẵn STK của khách để quét chuyển khoản hoàn tiền một chạm.
+13. **ADM Quản lý Người dùng:** Tra cứu thông tin khách hàng, kiểm tra chi tiết nhật ký biến động điểm uy tín; can thiệp điều chỉnh điểm thủ công kèm lý do; khóa và mở khóa tài khoản người dùng vi phạm.
+14. **ADM Báo cáo Doanh thu và Thống kê (Xuất Excel):** Lọc doanh thu theo ngày, tuần, tháng (chuẩn hóa mốc $\ge$ 2025-01-01); thống kê tổng doanh thu, lượt đặt, tỷ lệ lấp đầy; phân tách rõ tiền mặt và VietQR; hỗ trợ xuất báo cáo bảng tính Excel (.csv UTF-8 BOM kèm hộp thoại xác nhận).
 
 ---
 
-## 🧪 BỘ KIỂM THỬ PHẦN MỀM CHUYÊN NGHIỆP (`tester/`)
+## 🧪 MÔ-ĐUN KIỂM THỬ PHẦN MỀM (`tester/`)
 
-Dự án tích hợp đầy đủ quy trình kiểm thử theo tiêu chuẩn Software QA:
+Phục vụ học phần **Kiểm thử phần mềm**, toàn bộ tài liệu kiểm thử, kịch bản kiểm thử 14 chức năng, ma trận test case và 5 công cụ kiểm thử tự động chuyên nghiệp (PHPUnit, Postman, Playwright, Apache JMeter, OWASP ZAP) được tổ chức và quản lý hoàn toàn độc lập trong thư mục `tester/`:
 
 ```text
 tester/
-├── 01_unit_test/              # Kiểm thử Hộp Trắng (PHPUnit 10.5): 47 Tests, 129 Assertions (100% Pass)
+├── 01_unit_test/              # Kiểm thử Hộp Trắng (PHPUnit 10.5): 88 Tests, 232 Assertions (100% Pass)
 ├── 02_api_test/                # Kiểm thử API & Tích hợp (Postman & Newman): 25 API Requests, 34 Assertions (100% Pass)
 ├── 03_e2e_ui_test/             # Kiểm thử Tự động Giao diện (Playwright E2E): 12 Luồng nghiệp vụ (100% Pass)
 ├── 04_load_concurrency_test/   # Kiểm thử Tải & Race Condition (Apache JMeter 5.6): 3 Test Plans + One-Click Runner
 └── 05_security_test/           # Kiểm thử An toàn Thông tin (OWASP ZAP & Automated Auditor): 9/9 Chốt bảo mật (100% Pass)
 ```
 
-### ⚡ Các Lệnh Terminal Chạy Test Nhanh (NPM Scripts)
-
-```bash
-# 1. Kiểm thử đơn vị & thuật toán cốt lõi (PHPUnit)
-npm run test:unit
-
-# 2. Kiểm thử tự động API Client & Admin (Newman CLI)
-npm run test:api
-
-# 3. Kiểm thử tự động toàn diện giao diện (Playwright Headless)
-npm run test:e2e
-
-# 4. Kiểm thử giao diện có mở trình duyệt Chromium trực quan
-npm run test:e2e:headed
-
-# 5. Mở bảng báo cáo HTML Playwright kèm video / trace / screenshot
-npm run test:report
-
-# 6. Kiểm thử tự động 7 chốt an ninh mạng OWASP Top 10
-npm run test:security
-
-# 7. Chạy liên hoàn toàn bộ test suite
-npm run test:all
-```
+👉 **Xem chi tiết Kịch bản kiểm thử 14 chức năng, ma trận 88 test cases và hướng dẫn chạy kiểm thử tại:**  
+📖 **[Tài liệu kiểm thử phần mềm chi tiết (tester/README.md)](tester/README.md)**
 
 ---
 

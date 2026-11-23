@@ -5,6 +5,34 @@ require_once '../../includes/email_templates.php';
 
 require_admin();
 
+// Xử lý thao tác hàng loạt (Bulk Actions)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['bulk_action'])) {
+    $bulk_action = $_POST['bulk_action'];
+    $booking_ids = isset($_POST['booking_ids']) && is_array($_POST['booking_ids']) 
+                   ? array_map('intval', $_POST['booking_ids']) 
+                   : [];
+    $status_return = isset($_POST['status_return']) ? $_POST['status_return'] : 'tat_ca';
+
+    if (!empty($booking_ids)) {
+        $ids_str = implode(',', $booking_ids);
+        if ($bulk_action === 'xacnhan_all') {
+            $conn->query("UPDATE dat_san SET trang_thai = 'Đã xác nhận' WHERE dat_san_id IN ($ids_str) AND trang_thai = 'Chờ xác nhận'");
+            $conn->query("UPDATE thanh_toan SET trang_thai = 'da_thanh_toan' WHERE dat_san_id IN ($ids_str) AND phuong_thuc = 'chuyen_khoan'");
+            if (class_exists('\\Models\\AuditLog')) {
+                \Models\AuditLog::log($_SESSION['nguoi_dung_id'] ?? null, 'ADMIN_BULK_CONFIRM', 'dat_san', null, "Duyệt hàng loạt đơn ID: " . $ids_str);
+            }
+        } elseif ($bulk_action === 'huy_all') {
+            $conn->query("UPDATE dat_san SET trang_thai = 'Đã hủy' WHERE dat_san_id IN ($ids_str)");
+            $conn->query("UPDATE dat_san_slots SET trang_thai = 'released' WHERE dat_san_id IN ($ids_str)");
+            if (class_exists('\\Models\\AuditLog')) {
+                \Models\AuditLog::log($_SESSION['nguoi_dung_id'] ?? null, 'ADMIN_BULK_CANCEL', 'dat_san', null, "Hủy hàng loạt đơn ID: " . $ids_str);
+            }
+        }
+    }
+    header("Location: index.php?status=" . urlencode($status_return));
+    exit();
+}
+
 // Lấy box hiện tại để quay về
 $status_return = isset($_GET['status_return']) ? $_GET['status_return'] : 'tat_ca';
 

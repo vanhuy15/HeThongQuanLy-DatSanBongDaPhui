@@ -174,30 +174,60 @@ class User
     }
 
     /**
+     * Thống kê thông tin khách hàng cho Admin
+     */
+    public static function getCustomerStats(): array
+    {
+        $conn = Database::getConnection();
+        $total = $conn->query("SELECT COUNT(*) FROM nguoi_dung WHERE vai_tro = 'khach_hang'")->fetch_row()[0] ?? 0;
+        $avg = $conn->query("SELECT ROUND(AVG(diem_uy_tin)) FROM nguoi_dung WHERE vai_tro = 'khach_hang'")->fetch_row()[0] ?? 100;
+        $banned = $conn->query("SELECT COUNT(*) FROM nguoi_dung WHERE vai_tro = 'khach_hang' AND trang_thai = 'banned'")->fetch_row()[0] ?? 0;
+        return [
+            'total' => (int)$total,
+            'avg_reputation' => (int)$avg,
+            'banned' => (int)$banned
+        ];
+    }
+
+    /**
+     * Lấy toàn bộ danh sách khách hàng
+     */
+    public static function getAllCustomers(): array
+    {
+        $conn = Database::getConnection();
+        $res = $conn->query("SELECT * FROM nguoi_dung WHERE vai_tro = 'khach_hang' ORDER BY nguoi_dung_id DESC");
+        return $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    /**
      * Giới hạn điểm uy tín trong khoảng chuẩn [0, 100]
      */
-    public static function clampReputation(int $score): int {
+    public static function clampReputation(int $score): int
+    {
         return max(0, min(100, $score));
     }
 
     /**
      * Kiểm tra điều kiện được phép đặt sân (>= 40 điểm)
      */
-    public static function canBook(int $score): bool {
+    public static function canBook(int $score): bool
+    {
         return $score >= 40;
     }
 
     /**
      * Kiểm tra điều kiện được phép thanh toán Tiền mặt (>= 60 điểm)
      */
-    public static function canPayCash(int $score): bool {
+    public static function canPayCash(int $score): bool
+    {
         return $score >= 60;
     }
 
     /**
      * Tự động đồng bộ cộng +5 điểm uy tín cho các trận đấu đã hoàn thành
      */
-    public static function syncCompletedMatches($conn = null, $userId = null) {
+    public static function syncCompletedMatches($conn = null, $userId = null)
+    {
         if ($conn === null) {
             $conn = Database::getConnection();
         }

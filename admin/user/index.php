@@ -2,13 +2,14 @@
 require_once dirname(__DIR__) . '/bootstrap.php';
 include '../header_admin.php';
 
-// Thống kê người dùng
-$total_users = $conn->query("SELECT COUNT(*) FROM nguoi_dung WHERE vai_tro = 'khach_hang'")->fetch_row()[0];
-$avg_reputation = $conn->query("SELECT ROUND(AVG(diem_uy_tin)) FROM nguoi_dung WHERE vai_tro = 'khach_hang'")->fetch_row()[0] ?? 100;
-$banned_users = $conn->query("SELECT COUNT(*) FROM nguoi_dung WHERE vai_tro = 'khach_hang' AND trang_thai = 'banned'")->fetch_row()[0];
+// Thống kê người dùng qua Model User (Chuẩn MVC)
+$user_stats = \Models\User::getCustomerStats();
+$total_users = $user_stats['total'];
+$avg_reputation = $user_stats['avg_reputation'];
+$banned_users = $user_stats['banned'];
 
-// Lấy danh sách khách hàng
-$result = $conn->query("SELECT * FROM nguoi_dung WHERE vai_tro = 'khach_hang' ORDER BY nguoi_dung_id DESC");
+// Lấy danh sách khách hàng qua Model
+$customers_list = \Models\User::getAllCustomers();
 ?>
 
 <!-- PAGE HEADER -->
@@ -38,19 +39,29 @@ $result = $conn->query("SELECT * FROM nguoi_dung WHERE vai_tro = 'khach_hang' OR
                 </tr>
             </thead>
             <tbody>
-                <?php if ($result && $result->num_rows > 0) : ?>
-                    <?php while ($row = $result->fetch_assoc()) : 
+                <?php if (!empty($customers_list)) : ?>
+                    <?php foreach ($customers_list as $row) : 
                         $first_char = mb_substr(trim($row['ho_ten']), 0, 1, 'UTF-8');
                         $uy_tin = (int)($row['diem_uy_tin'] ?? 100);
                         $bar_color = ($uy_tin >= 80) ? '#007a64' : (($uy_tin >= 60) ? '#0284c7' : (($uy_tin >= 40) ? '#d97706' : '#dc2626'));
+                        $avatar_file = !empty($row['avatar']) ? $row['avatar'] : '';
+                        $has_avatar = !empty($avatar_file) && (file_exists(dirname(__DIR__, 2) . '/' . ltrim($avatar_file, '/')) || filter_var($avatar_file, FILTER_VALIDATE_URL));
+                        $avatar_src = $has_avatar ? (filter_var($avatar_file, FILTER_VALIDATE_URL) ? $avatar_file : '/quanlysanbong/' . ltrim($avatar_file, '/')) : '';
                     ?>
                     <tr>
                         <!-- Khách hàng -->
                         <td>
                             <div class="user-cell">
-                                <div class="avatar-letter avatar-teal">
-                                    <?php echo htmlspecialchars(mb_strtoupper($first_char, 'UTF-8')); ?>
-                                </div>
+                                <?php if ($has_avatar): ?>
+                                    <img src="<?php echo htmlspecialchars($avatar_src); ?>" alt="<?php echo htmlspecialchars($row['ho_ten']); ?>" class="avatar-letter" style="object-fit: cover; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #e2e8f0;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                    <div class="avatar-letter avatar-teal" style="display: none;">
+                                        <?php echo htmlspecialchars(mb_strtoupper($first_char, 'UTF-8')); ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="avatar-letter avatar-teal">
+                                        <?php echo htmlspecialchars(mb_strtoupper($first_char, 'UTF-8')); ?>
+                                    </div>
+                                <?php endif; ?>
                                 <div class="user-cell-info">
                                     <span class="user-cell-name"><?php echo htmlspecialchars($row['ho_ten']); ?></span>
                                     <span class="user-cell-sub"><?php echo htmlspecialchars($row['email'] ?: $row['sdt']); ?></span>
@@ -109,7 +120,7 @@ $result = $conn->query("SELECT * FROM nguoi_dung WHERE vai_tro = 'khach_hang' OR
                                         <?php echo function_exists('csrf_field') ? csrf_field() : ''; ?>
                                         <input type="hidden" name="id" value="<?php echo $row['nguoi_dung_id']; ?>">
                                         <input type="hidden" name="status" value="active">
-                                        <button type="submit" class="btn-action-icon btn-accept" title="Mở khóa tài khoản" style="background:none; border:none; cursor:pointer; padding:0;">
+                                        <button type="submit" class="btn-action-icon btn-accept" title="Mở khóa tài khoản">
                                             <i class="fas fa-unlock"></i>
                                         </button>
                                     </form>
@@ -118,7 +129,7 @@ $result = $conn->query("SELECT * FROM nguoi_dung WHERE vai_tro = 'khach_hang' OR
                                         <?php echo function_exists('csrf_field') ? csrf_field() : ''; ?>
                                         <input type="hidden" name="id" value="<?php echo $row['nguoi_dung_id']; ?>">
                                         <input type="hidden" name="status" value="banned">
-                                        <button type="submit" class="btn-action-icon btn-cancel" title="Khóa tài khoản" style="background:none; border:none; cursor:pointer; padding:0;">
+                                        <button type="submit" class="btn-action-icon btn-cancel" title="Khóa tài khoản">
                                             <i class="fas fa-lock"></i>
                                         </button>
                                     </form>
@@ -126,7 +137,7 @@ $result = $conn->query("SELECT * FROM nguoi_dung WHERE vai_tro = 'khach_hang' OR
                             </div>
                         </td>
                     </tr>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 <?php else : ?>
                     <tr>
                         <td colspan="5" style="padding: 40px; text-align: center; color: var(--text-muted);">

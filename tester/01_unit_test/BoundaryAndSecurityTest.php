@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
+
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -167,6 +169,33 @@ class BoundaryAndSecurityTest extends TestCase {
         $futureSlotTime = $now + 360;
         $isFutureValid = ($futureSlotTime > ($now + $bufferSeconds));
         $this->assertTrue($isFutureValid, "Khung giờ còn trên 5 phút phải khả dụng cho khách đặt");
+    }
+
+    /**
+     * Kiểm thử Xác thực Đăng nhập Phân biệt Hoa/Thường (Case-Sensitive Binary Matching)
+     * AGENTS.md Rule 2.2: admin15 !== ADMIN15
+     */
+    public function testBinaryUsernameCaseSensitivityAuthentication() {
+        $usernameDb = "admin15";
+        $inputLower = "admin15";
+        $inputUpper = "ADMIN15";
+        $inputMixed = "Admin15";
+
+        $this->assertTrue($usernameDb === $inputLower, "Tên đăng nhập trùng khớp chữ thường phải thành công");
+        $this->assertFalse($usernameDb === $inputUpper, "Tên đăng nhập chữ hoa (ADMIN15) phải bị từ chối");
+        $this->assertFalse($usernameDb === $inputMixed, "Tên đăng nhập hoa/thường (Admin15) phải bị từ chối");
+    }
+
+    /**
+     * Kiểm thử Cơ chế Hash Mật khẩu Chuẩn An toàn BCRYPT
+     */
+    public function testBcryptPasswordVerificationMatchesStrictAlgorithm() {
+        $rawPassword = "SecurePassword@2026";
+        $hash = password_hash($rawPassword, PASSWORD_BCRYPT, ['cost' => 10]);
+
+        $this->assertTrue(password_verify($rawPassword, $hash), "Mật khẩu đúng phải xác thực thành công");
+        $this->assertFalse(password_verify("WrongPassword@2026", $hash), "Mật khẩu sai phải bị từ chối");
+        $this->assertStringStartsWith('$2y$', $hash, "Hash mật khẩu phải theo chuẩn BCRYPT $2y$");
     }
 }
 

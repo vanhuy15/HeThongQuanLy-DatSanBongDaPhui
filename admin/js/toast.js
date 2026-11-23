@@ -37,3 +37,71 @@ function autoHideAdminMessages() {
     }, 3000);
   });
 }
+
+/**
+ * Âm thanh thông báo cho Admin (Web Audio API Ting-Ting chuyên nghiệp, 0 cần mp3)
+ */
+function playAdminAudioChime() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(784, now);
+    osc.frequency.exponentialRampToValueAtTime(1046, now + 0.15);
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.25, now + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.6);
+  } catch(e) {}
+}
+
+/**
+ * Polling kiểm tra số lượng đơn chờ duyệt mới cho Admin theo thời gian thực
+ */
+let lastAdminPendingCount = null;
+
+function initAdminRealtimeNotification() {
+  const bellBtn = document.getElementById('notifBellBtn');
+  if (!bellBtn) return;
+
+  function checkAdminPending() {
+    fetch('/quanlysanbong/index.php?controller=Notification&action=getAdminPendingCount')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const currentCount = parseInt(data.count, 10);
+          if (lastAdminPendingCount !== null && currentCount > lastAdminPendingCount) {
+            playAdminAudioChime();
+            showAdminMessage('🔔 Có đơn đặt sân mới cần duyệt! (Tổng: ' + currentCount + ')', 'success', 5000);
+          }
+          lastAdminPendingCount = currentCount;
+
+          let badge = bellBtn.querySelector('#adminNotifBadge') || bellBtn.querySelector('.notification-badge');
+          if (badge) {
+            if (currentCount > 0) {
+              badge.textContent = currentCount > 99 ? '99+' : currentCount;
+              badge.style.display = 'flex';
+            } else {
+              badge.style.display = 'none';
+            }
+          }
+        }
+      })
+      .catch(err => console.error(err));
+  }
+
+  // Khởi động kiểm tra và lặp lại mỗi 20 giây
+  checkAdminPending();
+  setInterval(checkAdminPending, 20000);
+}
+
+document.addEventListener('DOMContentLoaded', initAdminRealtimeNotification);

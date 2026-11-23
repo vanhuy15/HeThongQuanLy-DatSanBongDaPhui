@@ -33,58 +33,81 @@ class UserController extends Controller
         $password_error = null;
 
         // Xử lý upload avatar (Direct file post hoặc form)
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] === UPLOAD_ERR_OK) {
-            $file = $_FILES['avatar_file'];
-            $allowed_exts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-            $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
-
-            $img_info = @getimagesize($file['tmp_name']);
-
-            if (in_array($ext, $allowed_exts) && in_array($mime, $allowed_mimes) && $img_info !== false && $file['size'] <= 5 * 1024 * 1024) {
-                $avatar_dir = __DIR__ . '/../images/avatar/';
-                if (!is_dir($avatar_dir)) {
-                    mkdir($avatar_dir, 0777, true);
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && (!empty($_POST['ajax_upload']) || isset($_FILES['avatar_file']))) {
+            if (!empty($_POST['ajax_upload']) && (!isset($_FILES['avatar_file']) || $_FILES['avatar_file']['error'] !== UPLOAD_ERR_OK)) {
+                $upload_error = $_FILES['avatar_file']['error'] ?? UPLOAD_ERR_NO_FILE;
+                $msg = 'Có lỗi xảy ra khi tải ảnh lên server.';
+                if ($upload_error === UPLOAD_ERR_INI_SIZE || $upload_error === UPLOAD_ERR_FORM_SIZE) {
+                    $msg = 'Dung lượng file vượt quá giới hạn cho phép của máy chủ.';
+                } elseif ($upload_error === UPLOAD_ERR_NO_FILE) {
+                    $msg = 'Vui lòng chọn một file ảnh.';
                 }
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $msg]);
+                exit;
+            }
 
-                $new_filename = 'avatar_' . $nguoi_dung_id . '_' . time() . '.' . $ext;
-                $target_path = $avatar_dir . $new_filename;
-                $db_path = 'images/avatar/' . $new_filename;
+            if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['avatar_file'];
+                $allowed_exts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 
-                if (move_uploaded_file($file['tmp_name'], $target_path)) {
-                    $av_stmt = $conn->prepare("UPDATE nguoi_dung SET avatar = ? WHERE nguoi_dung_id = ?");
-                    $av_stmt->bind_param("si", $db_path, $nguoi_dung_id);
-                    $av_stmt->execute();
-                    $av_stmt->close();
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $file['tmp_name']);
+                finfo_close($finfo);
 
-                    $_SESSION['avatar'] = $db_path;
-                    $user['avatar'] = $db_path;
+                $img_info = @getimagesize($file['tmp_name']);
 
-                    if (!empty($_POST['ajax_upload'])) {
-                        header('Content-Type: application/json');
-                        echo json_encode(['success' => true, 'avatar' => $db_path, 'message' => 'Cập nhật ảnh đại diện thành công!']);
-                        exit;
+                if (in_array($ext, $allowed_exts) && in_array($mime, $allowed_mimes) && $img_info !== false && $file['size'] <= 5 * 1024 * 1024) {
+                    $avatar_dir = __DIR__ . '/../images/avatar/';
+                    if (!is_dir($avatar_dir)) {
+                        mkdir($avatar_dir, 0777, true);
                     }
-                    $info_success = "Cập nhật ảnh đại diện thành công!";
+
+                    $new_filename = 'avatar_' . $nguoi_dung_id . '_' . time() . '.' . $ext;
+                    $target_path = $avatar_dir . $new_filename;
+                    $db_path = 'images/avatar/' . $new_filename;
+
+                    // Xóa file avatar cũ nếu là file tự upload (tránh tích tụ rác)
+                    if (!empty($user['avatar']) && strpos($user['avatar'], 'images/avatar/avatar_') === 0) {
+                        $old_file = __DIR__ . '/../' . $user['avatar'];
+                        if (file_exists($old_file)) {
+                            @unlink($old_file);
+                        }
+                    }
+
+                    if (move_uploaded_file($file['tmp_name'], $target_path)) {
+                        $av_stmt = $conn->prepare("UPDATE nguoi_dung SET avatar = ? WHERE nguoi_dung_id = ?");
+                        $av_stmt->bind_param("si", $db_path, $nguoi_dung_id);
+                        $av_stmt->execute();
+                        $av_stmt->close();
+
+                        $_SESSION['avatar'] = $db_path;
+                        $user['avatar'] = $db_path;
+
+                        if (!empty($_POST['ajax_upload'])) {
+                            header('Content-Type: application/json');
+                            echo json_encode(['success' => true, 'avatar' => $db_path, 'message' => 'Cập nhật ảnh đại diện thành công!']);
+                            exit;
+                        }
+                        $info_success = "Cập nhật ảnh đại diện thành công!";
+                    } else {
+                        if (!empty($_POST['ajax_upload'])) {
+                            header('Content-Type: application/json');
+                            echo json_encode(['success' => false, 'message' => 'Không thể lưu file ảnh tải lên.']);
+                            exit;
+                        }
+                        $info_error = "Không thể lưu file ảnh tải lên.";
+                    }
                 } else {
                     if (!empty($_POST['ajax_upload'])) {
                         header('Content-Type: application/json');
-                        echo json_encode(['success' => false, 'message' => 'Không thể lưu file ảnh tải lên.']);
+                        echo json_encode(['success' => false, 'message' => 'Định dạng ảnh không hợp lệ hoặc dung lượng vượt quá 5MB.']);
                         exit;
                     }
-                    $info_error = "Không thể lưu file ảnh tải lên.";
+                    $info_error = "Định dạng ảnh không hợp lệ hoặc dung lượng vượt quá 5MB.";
                 }
-            } else {
-                if (!empty($_POST['ajax_upload'])) {
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Định dạng ảnh không hợp lệ hoặc dung lượng vượt quá 5MB.']);
-                    exit;
-                }
-                $info_error = "Định dạng ảnh không hợp lệ hoặc dung lượng vượt quá 5MB.";
             }
         }
 
@@ -205,6 +228,9 @@ class UserController extends Controller
         if (!isset($_SESSION['nguoi_dung_id']) || ($_SESSION['vai_tro'] ?? '') !== 'khach_hang') {
             $this->redirect('index.php?controller=Auth&action=login');
         }
+
+        // Tự động hủy và giải phóng sân cho các đơn giữ chỗ quá 10 phút chưa thanh toán
+        \Models\DatSan::autoCancelExpiredHolds(10);
 
         $nguoi_dung_id = $_SESSION['nguoi_dung_id'];
         $conn = Database::getConnection();

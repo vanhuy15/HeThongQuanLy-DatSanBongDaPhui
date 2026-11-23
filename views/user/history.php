@@ -84,7 +84,12 @@
                         <td>
                             <?php 
                             if ($row['trang_thai'] == 'Chờ thanh toán') {
+                                $remaining_hold = \Models\DatSan::getRemainingHoldTime($row['ngay_tao'], 600);
+                                $rem_min = floor($remaining_hold / 60);
+                                $rem_sec = $remaining_hold % 60;
+                                $time_str = sprintf("%02d:%02d", $rem_min, $rem_sec);
                                 echo '<span class="status-badge" style="background:#fff7ed; color:#ea580c; border:1px solid #fed7aa;">Chờ thanh toán</span>';
+                                echo '<br><small style="color:#d97706; font-size:0.75rem; font-weight:600;"><i class="far fa-clock"></i> Còn ' . $time_str . '</small>';
                             } elseif ($row['trang_thai'] == 'Chờ xác nhận') {
                                 if ($is_match_started) {
                                     echo '<span class="status-badge" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;" title="Đã quá giờ thi đấu mà quản trị viên chưa duyệt">Quá hạn duyệt</span>';

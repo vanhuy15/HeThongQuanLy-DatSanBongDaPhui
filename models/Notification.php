@@ -75,7 +75,7 @@ class Notification {
     /**
      * Helper định dạng thời gian thân thiện (VD: "5 phút trước", "Hôm nay, 14:00")
      */
-    private static function formatTimeAgo($datetime) {
+    public static function formatTimeAgo($datetime) {
         $time = strtotime($datetime);
         $diff = time() - $time;
         

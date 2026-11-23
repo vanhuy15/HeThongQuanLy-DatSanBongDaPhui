@@ -207,6 +207,7 @@ function initNotificationSystem() {
 
     // Load initial notification count
     fetchNotificationData();
+    setInterval(fetchNotificationData, 20000);
 
     // Close dropdown on outside click
     document.addEventListener('click', function(e) {
@@ -235,6 +236,30 @@ function toggleNotificationDropdown(e) {
     }
 }
 
+let lastUserUnreadCount = null;
+
+function playUserAudioChime() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(659, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        g.gain.setValueAtTime(0, now);
+        g.gain.linearRampToValueAtTime(0.2, now + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.5);
+    } catch(e) {}
+}
+
 function fetchNotificationData() {
     const badge = document.getElementById('notificationBadge');
     const listContainer = document.getElementById('notificationList');
@@ -243,6 +268,13 @@ function fetchNotificationData() {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
+                // Audio & Toast notification on new unread item
+                if (lastUserUnreadCount !== null && data.unread_count > lastUserUnreadCount) {
+                    playUserAudioChime();
+                    showToast('🔔 Bạn có ' + (data.unread_count - lastUserUnreadCount) + ' thông báo mới!', 'info');
+                }
+                lastUserUnreadCount = data.unread_count;
+
                 // Update badge
                 if (badge) {
                     if (data.unread_count > 0) {

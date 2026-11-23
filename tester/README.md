@@ -4,21 +4,74 @@
 
 ---
 
+## 📋 DANH SÁCH 14 CHỨC NĂNG CHUẨN
+
+1. Chức năng đăng kí/ đăng nhập/ đăng xuất
+2. Tìm kiếm và lọc sân
+3. Xem sân, tra cứu lịch và sơ đồ 2D
+4. Đặt sân và chống trùng
+5. Ghép sân 5 và 7 (khóa chéo)
+6. Thanh toán tiền mặt và VietQR
+7. Điểm uy tín và chế tài bùng sân
+8. Hủy đơn và hoàn tiền
+9. ADM Đăng nhập và phân quyền
+10. ADM Quản lí sân bóng và cấu hình ghép
+11. ADM Khung giờ và bảng giá
+12. ADM Quản lí đặt sân
+13. ADM Quản lí người dùng
+14. ADM Báo cáo doanh thu và thống kê
+
+---
+
+## 📝 KỊCH BẢN KIỂM THỬ 14 CHỨC NĂNG
+
+Kiểm thử viên đăng ký tài khoản mới bằng số điện thoại Việt Nam hợp lệ, kiểm tra mật khẩu được mã hóa BCRYPT trong cơ sở dữ liệu. Tiến hành đăng nhập với tên đăng nhập phân biệt chính xác chữ hoa/thường bằng so sánh nhị phân BINARY (admin15 khác ADMIN15), xác nhận hệ thống cấp phát phiên và mã Anti-CSRF mới (64-hex). Cuối cùng, thực hiện đăng xuất để hủy phiên làm việc hoàn toàn và chặn truy cập lại qua nút quay lại của trình duyệt.
+
+Kiểm thử viên sử dụng thanh tìm kiếm thời gian thực Debounce để tra cứu sân bóng theo tên hoặc địa chỉ mà không cần bấm Enter. Đồng thời thao tác bộ lọc nâng cao theo quy mô (sân 5 hoặc sân 7) và thanh trượt khoảng giá thuê để xác nhận danh sách sân bóng được cập nhật động tức thì và lọc dữ liệu chính xác theo yêu cầu.
+
+Khi truy cập trang chi tiết sân bóng, kiểm thử viên kiểm tra bộ chọn ngày để xác nhận các ngày trong quá khứ bị vô hiệu hóa (giới hạn từ năm 2025) và dữ liệu lịch tải động mượt mà qua AJAX. Sơ đồ 2D trực quan hiển thị đúng 3 trạng thái màu: xanh (sân trống), vàng (đang giữ chỗ) và đỏ (đã đặt). Đồng thời xác minh khoảng đệm 5 phút chuẩn bị sân (Lead Time Buffer): các khung giờ đã trôi qua hoặc cách giờ bắt đầu dưới 5 phút tự động bị làm mờ xám và vô hiệu hóa nút đặt sân.
+
+Kiểm thử viên chọn khung giờ trống và đặt sân nhưng chưa thanh toán để xác nhận hệ thống chuyển ô sân sang màu vàng (giữ chỗ trong 10 phút). Nếu quá 10 phút chưa thanh toán, hệ thống tự động hủy đơn, lập tức giải phóng slot CSDL (released) về lại màu xanh cho người khác đặt và gửi thông báo chuông cho khách. Sử dụng công cụ giả lập gửi 2 yêu cầu đặt cùng 1 slot trong cùng 1 mili-giây để xác minh cơ chế khóa dòng SELECT ... FOR UPDATE chỉ cho phép duy nhất 1 đơn thành công, ngăn chặn tuyệt đối lỗi đặt trùng.
+
+Kiểm thử viên đặt thành công sân 7 để xác nhận hệ thống tự động khóa chéo cả 2 sân con 5A và 5B ở cùng khung giờ đó trên sơ đồ 2D (san_con_khoa = 'A,B') nhằm ngăn người khác đặt lẻ. Ngược lại, nếu sân 5A hoặc sân 5B đã có lịch đặt hoặc đang được giữ chỗ, hệ thống tự động vô hiệu hóa lựa chọn sân 7 tương ứng và từ chối mọi yêu cầu đặt gửi lên.
+
+Kiểm thử viên dùng các tài khoản khác nhau để xác nhận điều kiện: điểm uy tín từ 60 trở lên mới được chọn tiền mặt, dưới 60 điểm bắt buộc chuyển khoản. Khi chọn chuyển khoản, hệ thống sinh mã VietQR Napas 247 MB Bank tự điền STK, số tiền và nội dung DATSAN <id>, đồng thời ẩn nút xác nhận thủ công (chỉ hiện nút xác nhận ở tab tiền mặt). Khi quét thanh toán hoặc mô phỏng qua Webhook SePAY, hệ thống tự động nhận diện giao dịch, chuyển đơn sang Đã xác nhận, phát âm thanh thông báo và tự động chuyển hướng về trang lịch sử mà không cần admin duyệt tay.
+
+Kiểm thử viên xác nhận tài khoản được cộng +5 điểm uy tín khi hoàn thành trận đấu (dừng ở trần tối đa 100 điểm) và cộng +2 điểm khi gửi đánh giá 1-5 sao. Ngược lại, khi bị đánh dấu bùng sân, hệ thống trừ thẳng 25 điểm uy tín và tăng số lần vi phạm; nếu điểm tụt dưới 60 điểm sẽ khóa thanh toán tiền mặt, và dưới 40 điểm sẽ khóa hoàn toàn quyền đặt sân.
+
+Kiểm thử viên thao tác hủy đơn ở 3 mốc thời gian để kiểm tra bộ quy tắc phạt điểm: trước > 24h không trừ điểm, từ 12-24h trừ 5 điểm, và dưới 12h trừ 15 điểm uy tín. Đối với đơn chuyển khoản, hệ thống yêu cầu nhập đầy đủ STK nhận hoàn tiền trước khi hủy, lập tức giải phóng slot CSDL (released) để mở lại sân cho khách khác; đồng thời tự động chuyển các đơn VietQR chưa duyệt quá giờ thi đấu sang Chờ hoàn tiền để bảo lưu quyền lợi cho khách.
+
+Kiểm thử viên sử dụng tài khoản vãng lai chưa đăng nhập và tài khoản khách hàng thông thường để truy cập trực tiếp vào các đường dẫn quản trị (/admin/*). Hệ thống chặn đứng các truy cập trái phép này với mã lỗi 403 hoặc chuyển hướng đăng nhập, chỉ cho phép tài khoản có vai trò quản trị viên (admin) đăng nhập thành công vào trang quản trị.
+
+Quản trị viên thực hiện thêm mới, chỉnh sửa thông tin và xóa sân bóng, kiểm tra ràng buộc ngăn chặn xóa các sân đang có lịch đặt chưa hoàn thành. Đồng thời cấu hình quy tắc ghép sân 7 từ 2 sân con tương ứng, đảm bảo dữ liệu được lưu chính xác và áp dụng tức thì lên thuật toán khóa chéo ở giao diện đặt sân của khách.
+
+Kiểm thử viên quản lý danh mục khung giờ hoạt động, thiết lập mức giá riêng cho các khung giờ vàng và cấu hình tỷ lệ phụ thu vào ngày cuối tuần, cũng như giá thuê riêng cho sân 7 ghép. Sau đó đối chiếu lại giá hiển thị trên giao diện đặt sân ở cả ngày thường và cuối tuần để đảm bảo hệ thống tính toán chính xác tổng tiền thuê sân.
+
+Trên bảng quản trị đặt sân đã được tối ưu giao diện tinh gọn, quản trị viên thực hiện duyệt đơn hợp lệ, từ chối đơn vi phạm để giải phóng lịch, xác nhận đã thu tiền mặt khi khách đến sân, và bấm báo bùng sân để kích hoạt trừ điểm phạt. Với các đơn yêu cầu hoàn tiền, hệ thống hiển thị mã VietQR chứa sẵn STK của khách để quản trị viên quét chuyển hoàn tiền nhanh chóng một chạm.
+
+Kiểm thử viên tra cứu thông tin khách hàng, xem chi tiết nhật ký biến động điểm uy tín để đảm bảo mọi lần cộng trừ điểm đều được ghi nhận minh bạch. Quản trị viên thực hiện điều chỉnh điểm thủ công kèm lý do xử lý, đồng thời kiểm tra tính năng khóa và mở khóa tài khoản để xác nhận tài khoản bị khóa lập tức mất quyền đăng nhập và đặt sân.
+
+Kiểm thử viên lọc số liệu doanh thu theo ngày, tuần, tháng (từ mốc 2025-01-01 trở đi) để kiểm tra độ chính xác của tổng doanh thu, số lượt đặt và tỷ lệ lấp đầy. Hệ thống chỉ ghi nhận doanh thu từ các đơn đã thanh toán hoặc hoàn thành, loại trừ đơn hủy/giữ chỗ, phân tách rõ tiền mặt và VietQR, đồng thời hỗ trợ xuất báo cáo doanh thu ra file Excel (.csv chuẩn UTF-8 BOM kèm hộp thoại xác nhận).
+
+---
+
 ## 🏗️ Tổng Quan 5 Công Cụ Kiểm Thử Trong Thư Mục `tester/`
 
 ```text
 tester/
 ├── README.md                                  # Hướng dẫn tổng hợp & quy trình thực thi
-├── 01_unit_test/                              # 🟢 TOOL 1: PHPUnit (47 Tests - 129 Assertions - 100% Pass)
-│   ├── BoundaryAndSecurityTest.php            # Kiểm thử giá trị biên (BVA 12h/24h/đêm), mã hóa BCRYPT, khóa tài khoản
-│   ├── CancellationPenaltyCalculationTest.php # Thuật toán phạt điểm uy tín theo mốc giờ hủy & hoàn tiền
-│   ├── CompoundPitchLockTest.php              # Thuật toán ghép sân 5 và 7 (Khóa chéo đa năng san_con_khoa)
-│   ├── CsrfTest.php                           # Test sinh mã & xác thực Anti-CSRF Token 64-hex
-│   ├── HoldTimerAndBookingStatusTest.php      # Thuật toán giữ chỗ 10 phút & tự động nhả slot
-│   ├── InputValidationAndSanitizationTest.php # Validation SĐT VN, Email, Ngày giờ, XSS Sanitization
-│   ├── PricingCalculationTest.php             # Quy tắc tính giá sân 5 và sân 7 ghép
-│   ├── ReputationPolicyTest.php               # Quy tắc Điểm uy tín & điều kiện khóa tiền mặt/đặt sân
-│   ├── VietQRFormatTest.php                   # Chuẩn hóa URL VietQR Napas247 MB Bank
+├── 01_unit_test/                              # 🟢 TOOL 1: PHPUnit (88 Tests - 232 Assertions - 100% Pass)
+│   ├── BoundaryAndSecurityTest.php            # 10 Tests: Giá trị biên BVA, BCRYPT, đăng nhập phân biệt hoa/thường BINARY
+│   ├── CancellationPenaltyCalculationTest.php # 8 Tests: Thuật toán phạt điểm uy tín, hoàn tiền, format thông báo phạt
+│   ├── CompoundPitchLockTest.php              # 8 Tests: Thuật toán ghép sân 5 & 7, khóa chéo đa năng hai chiều (san_con_khoa)
+│   ├── CsrfTest.php                           # 8 Tests: Sinh & xác thực Anti-CSRF Token 64-hex, ngoại lệ Webhook SePAY
+│   ├── HoldTimerAndBookingStatusTest.php      # 10 Tests: Bộ đếm 10 phút, tự động giải phóng slot CSDL dat_san_slots, stale refund
+│   ├── InputValidationAndSanitizationTest.php # 8 Tests: SĐT VN, Email, ngày >= 2025, lọc XSS, validate đuôi ảnh upload
+│   ├── PricingCalculationTest.php             # 6 Tests: Quy tắc tính giá sân 5, sân 7 ghép, định dạng VND, fallback 1.6x
+│   ├── ReputationPolicyTest.php               # 8 Tests: Điểm uy tín [0, 100], khóa tiền mặt (<60đ), khóa đặt (<40đ), VIP tier
+│   ├── VietQRFormatTest.php                   # 8 Tests: Chuẩn hóa VietQR MB Bank, SePAY Webhook regex DATSAN <id>, Bearer Token
+│   ├── NotificationSystemTest.php             # 7 Tests: Hệ thống chuông thông báo, time-ago thân thiện, sanitize nội dung
+│   ├── LeadTimeBufferTest.php                 # 7 Tests: Khoảng đệm 5 phút chuẩn bị sân (slot_start_time <= time() + 300)
 │   └── phpunit.phar                           # File thực thi độc lập PHPUnit 10.5
 ├── 02_api_test/                               # 🟠 TOOL 2: Postman & Newman (25 Requests - 34 Assertions - 100% Pass)
 │   ├── QuanLySanBong_API.postman_collection.json # 6 Phân hệ: Auth, Discovery, Booking, Checkout, User, Admin
@@ -48,8 +101,8 @@ Toàn bộ các công cụ đã được tích hợp thành lệnh npm một ch�
 
 | Lệnh Terminal | Công cụ kiểm thử | Số ca kiểm thử | Kết quả bảo đảm |
 | :--- | :--- | :---: | :---: |
-| `npm run test:unit` | **PHPUnit 10.5** (Unit Test / Hộp trắng) | 47 tests / 129 assertions | ✅ **100% Passed (0.01s)** |
-| `npm run test:api` | **Newman CLI** (API & Tích hợp) | 25 requests / 34 assertions | ✅ **100% Passed (2.9s)** |
+| `npm run test:unit` | **PHPUnit 10.5** (Unit Test / Hộp trắng) | 88 tests / 232 assertions | ✅ **100% Passed (0.3s)** |
+| `npm run test:api` | **Newman CLI** (API & Tích hợp) | 25 requests / 34 assertions | ✅ **100% Passed (8.3s)** |
 | `npm run test:e2e` | **Playwright** (E2E UI Headless) | 12 kịch bản luồng | ✅ **100% Passed (34.3s)** |
 | `npm run test:e2e:headed` | **Playwright** (Giao diện trực quan Chromium) | 12 kịch bản luồng | ✅ **100% Passed** |
 | `npm run test:report` | **Playwright Report** (Xem báo cáo HTML & Trace) | - | 📊 **Mở trình duyệt báo cáo** |
@@ -65,17 +118,17 @@ Bao phủ toàn bộ các thuật toán cốt lõi, công thức giá, phân tí
 ```bash
 npm run test:unit
 ```
-*Các nội dung đã kiểm thử:*
-1. Khóa chéo ghép sân 5 và 7 (`san_con_khoa = 'A,B'`).
-2. Bộ đếm giữ chỗ 10 phút & tự động hủy đơn quá hạn.
-3. Bảng phạt điểm uy tín hủy đơn ($>24$h, $12-24$h, $<12$h, bùng sân).
-4. Phân tích giá trị biên BVA tại mốc chính xác $24.0$h và $12.0$h.
-5. Ca đá tối muộn xuyên đêm ($23:00 - 00:30$) và ràng buộc thời lượng trận đấu.
-6. Kẹp biên điểm uy tín $[0, 100]$.
-7. Mã hóa mật khẩu BCRYPT (`$2y$`, 60 ký tự, `password_verify`).
-8. Chặn đăng nhập khi tài khoản bị admin khóa thủ công (`khoa_tai_khoan = 1`).
-9. Chuẩn hóa URL mã VietQR Napas 247 MB Bank.
-10. Lọc dữ liệu đầu vào, Anti-CSRF Token 64-hex, XSS Sanitization, Regex SĐT/Email.
+*11 Nhóm Kiểm Thử Hộp Trắng Bao Phủ 14 Chức Năng Cốt Lõi:*
+1. **Khóa chéo ghép sân 5 và 7:** Thuật toán chống xung đột hai chiều (`CompoundPitchLockTest.php`, 8 tests).
+2. **Bộ đếm giữ chỗ 10 phút & Tự động hủy:** Giải phóng slot CSDL `dat_san_slots` sang `released` (`HoldTimerAndBookingStatusTest.php`, 10 tests).
+3. **Bảng phạt điểm uy tín & Hoàn tiền:** Thuật toán phạt $>24$h, $12-24$h, $<12$h, bùng sân (`CancellationPenaltyCalculationTest.php`, 8 tests).
+4. **Phân tích giá trị biên BVA & An toàn:** Mốc 24h, 12h, ca đá tối muộn, đăng nhập phân biệt hoa/thường BINARY (`BoundaryAndSecurityTest.php`, 10 tests).
+5. **Khoảng đệm 5 phút chuẩn bị sân:** Chặn đặt khung giờ trong quá khứ hoặc dưới 5 phút (`LeadTimeBufferTest.php`, 7 tests).
+6. **Hệ thống Chuông thông báo đồng bộ:** Unread badge, định dạng time-ago, sanitize HTML (`NotificationSystemTest.php`, 7 tests).
+7. **Chính sách Điểm uy tín:** Kẹp biên $[0, 100]$, khóa tiền mặt ($<60$đ), khóa đặt sân ($<40$đ), VIP tier (`ReputationPolicyTest.php`, 8 tests).
+8. **Thanh toán VietQR & Webhook SePAY:** Chuẩn hóa Napas 247, regex mã đơn `DATSAN <id>`, xác thực Token (`VietQRFormatTest.php`, 8 tests).
+9. **Quy tắc tính giá linh hoạt:** Đơn giá sân 5, sân 7 ghép, hệ số 1.6x fallback, định dạng VNĐ (`PricingCalculationTest.php`, 6 tests).
+10. **Lọc dữ liệu đầu vào & Anti-CSRF:** Token 64-hex, ngoại lệ Webhook SePAY, regex SĐT/Email, ngày $\ge$ 2025, đuôi ảnh upload (`CsrfTest.php` 8 tests, `InputValidationAndSanitizationTest.php` 8 tests).
 
 ---
 

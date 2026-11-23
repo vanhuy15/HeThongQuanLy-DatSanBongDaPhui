@@ -65,4 +65,20 @@ class NotificationController extends Controller {
             'unread_count' => 0
         ]);
     }
+
+    /**
+     * API đếm số đơn chờ duyệt cho Admin (Polling thời gian thực)
+     */
+    public function getAdminPendingCount() {
+        if (!isset($_SESSION['vai_tro']) || $_SESSION['vai_tro'] !== 'admin') {
+            $this->jsonResponse(['success' => false, 'count' => 0], 403);
+            return;
+        }
+
+        $count = \Models\DatSan::countPending();
+        $this->jsonResponse([
+            'success' => true,
+            'count' => $count
+        ]);
+    }
 }

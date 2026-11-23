@@ -1,13 +1,12 @@
 <?php
 require_once dirname(__DIR__) . '/bootstrap.php';
-include '../header_admin.php'; 
 require_admin();
 
 $error = $success = "";
 $san_id_filter = isset($_GET['san_id']) ? intval($_GET['san_id']) : 0;
 
 // ==========================================================
-// 1. XỬ LÝ THÊM KHUNG GIỜ MỚI
+// 1. XỬ LÝ THÊM KHUNG GIỜ MỚI (Xử lý trước khi gửi Header HTML)
 // ==========================================================
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add') {
     $san_id_add = intval($_POST['san_id']);
@@ -67,6 +66,9 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete') {
 
 if (isset($_GET['success'])) $success = $_GET['success'];
 if (isset($_GET['error'])) $error = $_GET['error'];
+
+// Gọi Header sau khi đã hoàn tất mọi chuyển hướng (tránh lỗi Cannot modify header information)
+include '../header_admin.php';
 
 // ==========================================================
 // 3. LẤY DỮ LIỆU SÂN & PHÂN TRANG

@@ -20,17 +20,8 @@ $chartInfo = DoanhThu::getRevenueLast7Days();
 $labels = $chartInfo['labels'];
 $data_chart = $chartInfo['data_chart'];
 
-// Danh sách 4 đơn chờ duyệt gần nhất
-$pending_bookings_query = $conn->query("
-    SELECT ds.dat_san_id, ds.ngay_dat, ds.ten_san_con, nd.ho_ten, sb.ten_san, kg.gio_bat_dau, kg.gio_ket_thuc
-    FROM dat_san ds
-    JOIN nguoi_dung nd ON ds.nguoi_dung_id = nd.nguoi_dung_id
-    JOIN khung_gio kg ON ds.khung_gio_id = kg.khung_gio_id
-    JOIN san_bong sb ON kg.san_id = sb.san_id
-    WHERE ds.trang_thai = 'Chờ xác nhận' AND ds.deleted_at IS NULL
-    ORDER BY ds.dat_san_id DESC
-    LIMIT 4
-");
+// Danh sách 4 đơn chờ duyệt gần nhất qua Model DatSan
+$pending_bookings = DatSan::getRecentPending(4);
 ?>
 
 <div class="page-header">
@@ -142,9 +133,9 @@ $pending_bookings_query = $conn->query("
         </div>
         
         <div style="padding: 16px 20px;">
-            <?php if ($pending_bookings_query && $pending_bookings_query->num_rows > 0): ?>
+            <?php if (!empty($pending_bookings)): ?>
                 <div style="display: flex; flex-direction: column; gap: 14px;">
-                    <?php while($p = $pending_bookings_query->fetch_assoc()): 
+                    <?php foreach($pending_bookings as $p): 
                         $first_letter = mb_substr(trim($p['ho_ten']), 0, 1, 'UTF-8');
                     ?>
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-light);">
@@ -172,7 +163,7 @@ $pending_bookings_query = $conn->query("
                             </a>
                         </div>
                     </div>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div style="text-align: center; padding: 40px 10px; color: var(--text-muted);">

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
 
@@ -38,7 +39,8 @@ class CancellationPenaltyCalculationTest extends TestCase
         }
     }
 
-    public function testCancelUnconfirmedBookingIncursNoPenaltyRegardlessOfTime() {
+    public function testCancelUnconfirmedBookingIncursNoPenaltyRegardlessOfTime()
+    {
         $result = \Models\DatSan::calculateCancellationPenalty(2.0, false);
         $this->assertEquals(0, $result['penalty_points'], "Đơn chưa xác nhận hủy không bị phạt");
     }
@@ -85,5 +87,17 @@ class CancellationPenaltyCalculationTest extends TestCase
         $booking3 = ['trang_thai' => 'Chờ xác nhận', 'phuong_thuc' => 'chuyen_khoan'];
         $eligible3 = ($booking3['trang_thai'] === 'Đã xác nhận' && $booking3['phuong_thuc'] === 'chuyen_khoan');
         $this->assertFalse($eligible3, "Đơn chưa xác nhận thanh toán thành công không kích hoạt hoàn tiền");
+    }
+
+    public function testCancellationMessageFormattedCorrectly()
+    {
+        $resUrgent = \Models\DatSan::calculateCancellationPenalty(5.0, true);
+        $this->assertStringContainsString("15 điểm", $resUrgent['penalty_msg']);
+
+        $resEarly = \Models\DatSan::calculateCancellationPenalty(18.0, true);
+        $this->assertStringContainsString("5 điểm", $resEarly['penalty_msg']);
+
+        $resSafe = \Models\DatSan::calculateCancellationPenalty(30.0, true);
+        $this->assertEmpty($resSafe['penalty_msg']);
     }
 }

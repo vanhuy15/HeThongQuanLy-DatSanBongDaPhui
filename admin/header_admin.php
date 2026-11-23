@@ -14,7 +14,7 @@ if (isset($conn)) {
     // Lấy 6 đơn đặt sân / thanh toán mới nhất để hiện trong Popup thông báo
     $res_notif = $conn->query("
         SELECT ds.dat_san_id, ds.ngay_dat, ds.trang_thai, nd.ho_ten, sb.ten_san, ds.ten_san_con, 
-               kg.gio_bat_dau, kg.gio_ket_thuc, tt.phuong_thuc
+               kg.gio_bat_dau, kg.gio_ket_thuc, tt.phuong_thuc, ds.ngay_tao
         FROM dat_san ds
         JOIN nguoi_dung nd ON ds.nguoi_dung_id = nd.nguoi_dung_id
         JOIN khung_gio kg ON ds.khung_gio_id = kg.khung_gio_id
@@ -27,6 +27,25 @@ if (isset($conn)) {
     if ($res_notif) {
         while ($rn = $res_notif->fetch_assoc()) {
             $recent_admin_notifs[] = $rn;
+        }
+    }
+}
+
+if (!function_exists('admin_format_time_ago')) {
+    function admin_format_time_ago($datetime) {
+        if (empty($datetime)) return "Vừa xong";
+        $time = strtotime($datetime);
+        $diff = time() - $time;
+        if ($diff < 60) {
+            return "Vừa xong";
+        } elseif ($diff < 3600) {
+            return floor($diff / 60) . " phút trước";
+        } elseif ($diff < 86400) {
+            return floor($diff / 3600) . " giờ trước";
+        } elseif ($diff < 172800) {
+            return "Hôm qua lúc " . date('H:i', $time);
+        } else {
+            return date('d/m/Y H:i', $time);
         }
     }
 }
@@ -143,76 +162,67 @@ $current_uri = $_SERVER['REQUEST_URI'];
             
             <div class="topbar-actions">
                 
-                <!-- NOTIFICATION BELL & POPUP -->
-                <div class="topbar-dropdown-wrapper" id="notifDropdownWrapper">
-                    <button type="button" class="topbar-icon-btn" id="notifBellBtn" title="Thông báo đặt sân &amp; thanh toán" onclick="toggleNotifDropdown(event)">
+                <!-- NOTIFICATION BELL & POPUP (ĐỒNG BỘ CẤU TRÚC 100% VỚI USER) -->
+                <div class="nav-notification-item" id="notifDropdownWrapper">
+                    <button type="button" class="btn-notification-bell" id="notifBellBtn" title="Thông báo" onclick="toggleNotifDropdown(event)">
                         <i class="far fa-bell"></i>
-                        <?php if ($badge_count_cho > 0): ?>
-                            <span class="dot-badge"></span>
-                        <?php endif; ?>
+                        <span class="notification-badge" id="adminNotifBadge" style="<?php echo ($badge_count_cho > 0) ? 'display:flex;' : 'display:none;'; ?>">
+                            <?php echo $badge_count_cho > 99 ? '99+' : $badge_count_cho; ?>
+                        </span>
                     </button>
                     
-                    <div class="topbar-dropdown-menu notif-menu" id="notifDropdownMenu">
-                        <div class="dropdown-header">
-                            <div>
-                                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-heading); margin: 0;">Thông báo mới</h4>
-                                <span style="font-size: 0.78rem; color: var(--text-muted);">
-                                    <?php echo $badge_count_cho > 0 ? "Có $badge_count_cho đơn đang chờ duyệt" : "Không có đơn chờ duyệt mới"; ?>
-                                </span>
-                            </div>
-                            <?php if ($badge_count_cho > 0): ?>
-                                <span class="badge badge-cho" style="font-size: 0.72rem; padding: 2px 7px;"><?php echo $badge_count_cho; ?> mới</span>
-                            <?php endif; ?>
+                    <div class="notification-dropdown-menu" id="notifDropdownMenu">
+                        <div class="notification-header">
+                            <div class="notif-title"><i class="fas fa-bell" style="color: var(--primary);"></i> Thông báo</div>
+                            <button type="button" class="btn-mark-all-read" onclick="markAllAdminNotificationsRead(event)">Đã đọc tất cả</button>
                         </div>
                         
-                        <div class="notif-list">
+                        <div class="notification-list">
                             <?php if (!empty($recent_admin_notifs)): ?>
                                 <?php foreach ($recent_admin_notifs as $nf): 
                                     $is_cho = ($nf['trang_thai'] === 'Chờ xác nhận');
-                                    $first_c = mb_substr(trim($nf['ho_ten']), 0, 1, 'UTF-8');
+                                    $is_ck = ($nf['phuong_thuc'] === 'chuyen_khoan');
+                                    $icon_class = $is_ck ? 'xac_nhan' : 'dat_san';
+                                    $icon_tag = $is_ck ? 'fas fa-check' : 'fas fa-futbol';
+                                    $time_str = admin_format_time_ago($nf['ngay_tao'] ?? null);
                                 ?>
-                                <a href="/quanlysanbong/admin/datsan/?status=<?php echo $is_cho ? 'cho-xac-nhan' : 'tat_ca'; ?>" class="notif-item <?php echo $is_cho ? 'notif-unread' : ''; ?>">
-                                    <div class="avatar-letter <?php echo $is_cho ? 'avatar-amber' : 'avatar-teal'; ?>" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                        <?php echo htmlspecialchars(mb_strtoupper($first_c, 'UTF-8')); ?>
+                                <a href="/quanlysanbong/admin/datsan/?status=<?php echo $is_cho ? 'cho-xac-nhan' : 'tat_ca'; ?>" class="notification-item <?php echo $is_cho ? 'unread' : ''; ?>">
+                                    <div class="notification-icon <?php echo $icon_class; ?>">
+                                        <i class="<?php echo $icon_tag; ?>"></i>
                                     </div>
-                                    <div class="notif-content">
-                                        <p class="notif-title">
+                                    <div class="notification-content">
+                                        <div class="notif-item-title">
                                             <strong><?php echo htmlspecialchars($nf['ho_ten']); ?></strong> 
-                                            <?php if ($nf['phuong_thuc'] == 'chuyen_khoan'): ?>
-                                                đã thanh toán <span class="pay-tag pay-tag-qr" style="font-size: 10px; padding: 1px 5px;">VietQR</span>
+                                            <?php if ($is_ck): ?>
+                                                đã thanh toán <span class="pay-tag pay-tag-qr" style="font-size: 10px; padding: 1px 5px; border-radius: 4px; background: #ecfdf5; color: #047857; font-weight: 600;">VietQR</span>
                                             <?php else: ?>
-                                                đã đặt sân <span class="pay-tag pay-tag-cash" style="font-size: 10px; padding: 1px 5px;">Tiền mặt</span>
+                                                đã đặt sân <span class="pay-tag pay-tag-cash" style="font-size: 10px; padding: 1px 5px; border-radius: 4px; background: #eff6ff; color: #1d4ed8; font-weight: 600;">Tiền mặt</span>
                                             <?php endif; ?>
-                                        </p>
-                                        <span class="notif-sub">
-                                            <?php echo htmlspecialchars($nf['ten_san']); ?><?php echo !empty($nf['ten_san_con']) ? ' • Sân '.$nf['ten_san_con'] : ''; ?> • <?php echo date("H:i", strtotime($nf['gio_bat_dau'])); ?> (<?php echo date("d/m", strtotime($nf['ngay_dat'])); ?>)
-                                        </span>
+                                        </div>
+                                        <div class="notif-item-text">
+                                            Đơn #<?php echo $nf['dat_san_id']; ?> • <?php echo htmlspecialchars($nf['ten_san']); ?><?php echo !empty($nf['ten_san_con']) ? ' (Sân '.$nf['ten_san_con'].')' : ''; ?> lúc <?php echo date("H:i", strtotime($nf['gio_bat_dau'])); ?> ngày <?php echo date("d/m", strtotime($nf['ngay_dat'])); ?>
+                                        </div>
+                                        <div class="notif-item-time">
+                                            <?php echo $time_str; ?>
+                                        </div>
                                     </div>
-                                    <?php if ($is_cho): ?>
-                                        <span class="notif-dot"></span>
-                                    <?php endif; ?>
                                 </a>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <div style="padding: 30px 20px; text-align: center; color: var(--text-muted); font-size: 0.88rem;">
-                                    <i class="far fa-bell-slash" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+                                <div class="notification-empty">
+                                    <i class="far fa-bell-slash" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
                                     Chưa có thông báo nào
                                 </div>
                             <?php endif; ?>
                         </div>
                         
-                        <div class="dropdown-footer">
-                            <a href="/quanlysanbong/admin/datsan/" style="color: var(--primary); font-size: 0.85rem; font-weight: 700; display: block; text-align: center;">
-                                Xem toàn bộ lịch đặt sân &rarr;
+                        <div class="notification-footer">
+                            <a href="/quanlysanbong/admin/datsan/">
+                                Xem toàn bộ lịch đặt sân <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
                     </div>
                 </div>
-                
-                <!-- EXTERNAL LINK TO CUSTOMER SITE -->
-                <a href="/quanlysanbong/index.php" target="_blank" class="topbar-icon-btn" title="Mở trang chủ người dùng">
-                    <i class="fas fa-external-link-alt"></i>
-                </a>
 
             </div>
         </header>

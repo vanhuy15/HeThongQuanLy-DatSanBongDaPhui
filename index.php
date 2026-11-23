@@ -40,8 +40,15 @@ $dotenv->load();
 // Nạp helper bảo vệ chống CSRF
 require_once __DIR__ . '/includes/csrf.php';
 
-// Xác thực mã CSRF Token toàn cục cho mọi yêu cầu POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Kiểm tra xem yêu cầu hiện tại có phải là Webhook từ cổng thanh toán bên thứ ba (SePAY / Casso) hay không
+// Webhook là API máy-chủ-gọi-máy-chủ (Machine-to-Machine), xác thực qua API Key/Signature chứ không qua Session CSRF
+$is_webhook = (
+    (isset($_GET['controller']) && strtolower($_GET['controller']) === 'payment' && isset($_GET['action']) && strtolower($_GET['action']) === 'webhook') ||
+    (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'action=webhook') !== false)
+);
+
+// Xác thực mã CSRF Token toàn cục cho các yêu cầu POST thông thường từ trình duyệt
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$is_webhook) {
     $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     if (!verify_csrf_token($token)) {
         http_response_code(403);

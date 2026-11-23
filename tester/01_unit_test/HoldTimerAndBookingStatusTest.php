@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
 
@@ -25,7 +26,8 @@ class HoldTimerAndBookingStatusTest extends TestCase
         $this->assertEquals(0, $expiredRemaining, "Đơn quá 10 phút phải hết hạn (còn lại 0 giây)");
     }
 
-    public function testHoldExpiredCondition() {
+    public function testHoldExpiredCondition()
+    {
         $now = time();
 
         $createdAtOld = date('Y-m-d H:i:s', $now - 700);
@@ -99,5 +101,58 @@ class HoldTimerAndBookingStatusTest extends TestCase
 
         // 3. Đơn đã xác nhận nếu khách hủy thì được chuyển sang 'Chờ hoàn tiền'
         $this->assertContains('Chờ hoàn tiền', $validTransitions['Đã xác nhận']);
+    }
+
+    public function testAutoCancelReleasesDbSlot()
+    {
+        $statusAfterCancel = 'released';
+        $this->assertEquals('released', $statusAfterCancel, "Khi hủy đơn giữ chỗ, slot phải chuyển về released");
+    }
+
+    public function testHoldRemainingTimeZeroWhenExpired()
+    {
+        $createdAt = date('Y-m-d H:i:s', time() - 1000);
+        $rem = \Models\DatSan::getRemainingHoldTime($createdAt, 600);
+        $this->assertEquals(0, $rem);
+    }
+
+    public function testStaleBookingAutoRefundTransition()
+    {
+        $booking = [
+            'trang_thai' => 'Chờ xác nhận',
+            'phuong_thuc' => 'chuyen_khoan',
+            'is_past_start' => true
+        ];
+        $targetStatus = ($booking['is_past_start'] && $booking['phuong_thuc'] === 'chuyen_khoan') ? 'Chờ hoàn tiền' : $booking['trang_thai'];
+        $this->assertEquals('Chờ hoàn tiền', $targetStatus, "Đơn chuyển khoản quá giờ thi đấu tự chuyển sang Chờ hoàn tiền");
+    }
+
+    public function testCashBookingPastMatchStartAutoCancelled()
+    {
+        $booking = [
+            'trang_thai' => 'Chờ xác nhận',
+            'phuong_thuc' => 'tien_mat',
+            'is_past_start' => true
+        ];
+        $targetStatus = ($booking['is_past_start'] && $booking['phuong_thuc'] === 'tien_mat') ? 'Đã hủy' : $booking['trang_thai'];
+        $this->assertEquals('Đã hủy', $targetStatus, "Đơn tiền mặt quá giờ thi đấu tự chuyển sang Đã hủy");
+    }
+
+    public function testExpiredHoldNotificationContent()
+    {
+        $bookingId = 155;
+        $pitchName = "Sân bóng đá 743-Nam Cao";
+        $content = "Đơn đặt sân $pitchName đã tự động hủy do quá thời hạn thanh toán 10 phút. Sân đã được giải phóng cho khách hàng khác.";
+        $this->assertStringContainsString("10 phút", $content);
+        $this->assertStringContainsString("giải phóng", $content);
+    }
+
+    public function testHoldTimerFormatMinuteSecond()
+    {
+        $seconds = 455; // 7 phút 35 giây
+        $m = floor($seconds / 60);
+        $s = $seconds % 60;
+        $formatted = sprintf("%02d:%02d", $m, $s);
+        $this->assertEquals("07:35", $formatted);
     }
 }

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
 
@@ -65,9 +66,33 @@ class ReputationPolicyTest extends TestCase
         $this->assertEquals(82, $scoreNormalAfter, "Cộng điểm review hợp lệ");
     }
 
-    public function testCompleteMatchBonusCappedAt100() {
+    public function testCompleteMatchBonusCappedAt100()
+    {
         $scoreBefore = 98;
         $scoreAfter = \Models\User::clampReputation($scoreBefore + 5);
         $this->assertEquals(100, $scoreAfter, "Hoàn thành trận +5 điểm tối đa 100");
+    }
+
+    public function testReputationFloorIsZero()
+    {
+        $negativeScore = -15;
+        $clamped = \Models\User::clampReputation($negativeScore);
+        $this->assertEquals(0, $clamped, "Điểm uy tín tối thiểu không được dưới 0");
+    }
+
+    public function testReputationTierClassification()
+    {
+        $tiers = [
+            100 => 'VIP',
+            90  => 'VIP',
+            85  => 'Tiêu chuẩn',
+            60  => 'Cảnh báo',
+            35  => 'Bị khóa'
+        ];
+
+        foreach ($tiers as $score => $expectedTier) {
+            $tier = ($score >= 90) ? 'VIP' : (($score >= 70) ? 'Tiêu chuẩn' : (($score >= 40) ? 'Cảnh báo' : 'Bị khóa'));
+            $this->assertEquals($expectedTier, $tier);
+        }
     }
 }

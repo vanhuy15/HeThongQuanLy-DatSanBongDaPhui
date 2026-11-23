@@ -83,18 +83,18 @@
                         Quét mã VietQR để thanh toán
                     </h3>
                     <?php
-                        $bank_id = getenv('VIETQR_BANK_ID') ?: "MB";
-                        $bank_name = getenv('VIETQR_BANK_NAME') ?: "MB Bank";
-                        $stk = getenv('VIETQR_ACCOUNT_NO') ?: "000000000000";
-                        $chu_tk = getenv('VIETQR_ACCOUNT_NAME') ?: "SAN BONG PITCH";
-                        $noidung_ck = "DATSAN " . $dat_san_id;
-                        $so_tien_ck = (int)$dat_san['gia_tien'];
-                        
-                        $qr_url = \Services\VietQR::generateUrl($dat_san_id, $so_tien_ck, $bank_id, $stk, $chu_tk, 'qr_only.svg');
+                    $bank_id = getenv('VIETQR_BANK_ID') ?: "MB";
+                    $bank_name = getenv('VIETQR_BANK_NAME') ?: "MB Bank";
+                    $stk = getenv('VIETQR_ACCOUNT_NO') ?: "000000000000";
+                    $chu_tk = getenv('VIETQR_ACCOUNT_NAME') ?: "SAN BONG PITCH";
+                    $noidung_ck = "DATSAN " . $dat_san_id;
+                    $so_tien_ck = (int)$dat_san['gia_tien'];
+
+                    $qr_url = \Services\VietQR::generateUrl($dat_san_id, $so_tien_ck, $bank_id, $stk, $chu_tk, 'qr_only.svg');
                     ?>
                     <div class="qr-container">
                         <div class="qr-frame">
-                            <img src="<?php echo $qr_url; ?>" alt="Mã QR Chuyển khoản" class="qr-image" loading="eager" crossorigin="anonymous">
+                            <img src="<?php echo $qr_url; ?>" alt="Mã QR Chuyển khoản" class="qr-image" loading="eager" crossorigin="anonymous" draggable="true" title="Kéo thả hoặc lưu mã QR để quét thanh toán">
                         </div>
                         <p class="qr-instruction">
                             Mở ứng dụng Ngân hàng bất kỳ để quét mã thanh toán tự động
@@ -136,9 +136,10 @@
                     </div>
                 </div>
 
-                <div id="submitBtnWrapper" style="<?php echo $is_cash_locked ? 'display:block;' : 'display:none;'; ?> text-align: center; margin-top: 2rem;">
-                    <button type="submit" id="btnSubmitPayment" class="btn-submit" style="background: <?php echo $is_cash_locked ? '#0284c7' : '#0d9488'; ?>;">
-                        <span id="submitBtnText"><?php echo $is_cash_locked ? 'Xác nhận chuyển khoản' : 'Xác nhận đặt sân'; ?></span>
+                <!-- NÚT NÀY CHỈ XUẤT HIỆN KHI CHỌN TIỀN MẶT, MỤC QR HOÀN TOÀN TỰ ĐỘNG -->
+                <div id="submitBtnWrapper" style="display:none; text-align: center; margin-top: 2rem;">
+                    <button type="submit" id="btnSubmitPayment" class="btn-submit" style="background: #0d9488;">
+                        <span id="submitBtnText">Xác nhận đặt sân (Tiền mặt)</span>
                     </button>
                 </div>
             </form>
@@ -176,6 +177,11 @@
     <?php endif; ?>
 </div>
 
-<script src="assets/js/payment.js?v=1.0.1"></script>
+<script src="assets/js/payment.js?v=1.0.2"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        startPaymentStatusPolling(<?php echo (int)$dat_san_id; ?>);
+    });
+</script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

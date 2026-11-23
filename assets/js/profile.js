@@ -10,6 +10,15 @@ document.addEventListener("DOMContentLoaded", function () {
   initReputationModalEvents();
 });
 
+function getCsrfToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  if (meta && meta.getAttribute("content")) {
+    return meta.getAttribute("content");
+  }
+  const input = document.querySelector('input[name="csrf_token"]');
+  return input ? input.value : "";
+}
+
 function initAvatarUpload() {
   const avatarContainer = document.getElementById("avatarUploadContainer");
   const avatarInput = document.getElementById("avatarFileInput");
@@ -29,22 +38,48 @@ function initAvatarUpload() {
 
       if (file.size > 5 * 1024 * 1024) {
         alert("Dung lượng ảnh không được vượt quá 5MB!");
+        this.value = "";
         return;
       }
 
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      if (file.type && !allowedTypes.includes(file.type)) {
+        alert("Định dạng ảnh không hợp lệ! Vui lòng chọn ảnh JPG, PNG hoặc WEBP.");
+        this.value = "";
+        return;
+      }
+
+      const csrfToken = getCsrfToken();
       const formData = new FormData();
       formData.append("avatar_file", file);
       formData.append("ajax_upload", "1");
+      if (csrfToken) {
+        formData.append("csrf_token", csrfToken);
+      }
 
       if (avatarSpinner) avatarSpinner.style.display = "flex";
 
+      const headers = {};
+      if (csrfToken) {
+        headers["X-CSRF-TOKEN"] = csrfToken;
+      }
+
       fetch("index.php?controller=User&action=profile", {
         method: "POST",
+        headers: headers,
         body: formData,
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            return res.text().then((text) => {
+              throw new Error("Mã phản hồi HTTP: " + res.status);
+            });
+          }
+          return res.json();
+        })
         .then((data) => {
           if (avatarSpinner) avatarSpinner.style.display = "none";
+          avatarInput.value = "";
           if (data.success) {
             const newSrc = data.avatar + "?t=" + new Date().getTime();
             if (avatarImg) avatarImg.src = newSrc;
@@ -71,7 +106,8 @@ function initAvatarUpload() {
         })
         .catch((err) => {
           if (avatarSpinner) avatarSpinner.style.display = "none";
-          alert("Lỗi kết nối khi tải ảnh lên, vui lòng thử lại.");
+          avatarInput.value = "";
+          alert("Lỗi khi tải ảnh lên, vui lòng thử lại.");
         });
     });
   }

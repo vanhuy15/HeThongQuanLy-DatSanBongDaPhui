@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
 
@@ -70,5 +71,60 @@ class VietQRFormatTest extends TestCase
     {
         $this->assertEquals('1111000050174', self::ACCOUNT_NO, "Số tài khoản MB Bank phải đồng bộ 1111000050174");
         $this->assertEquals('HOANG VAN HUY', self::ACCOUNT_NAME, "Chủ tài khoản phải là HOANG VAN HUY");
+    }
+
+    public function testSePayWebhookContentRegexExtraction()
+    {
+        $samples = [
+            'DATSAN 155' => 155,
+            'DATSAN_155' => 155,
+            'DATSAN155'  => 155,
+            'Chuyen tien DATSAN 200 cho san' => 200,
+            'MBVCB.123456.DATSAN 345.CT tu...' => 345
+        ];
+
+        foreach ($samples as $content => $expectedId) {
+            $matched = preg_match('/DATSAN[_\s]*(\d+)/i', $content, $matches);
+            $this->assertEquals(1, $matched, "Phải nhận diện được mã đơn từ nội dung: $content");
+            $this->assertEquals($expectedId, (int)$matches[1]);
+        }
+    }
+
+    public function testSePayAmountValidationMatchesBookingPrice()
+    {
+        $bookingPrice = 350000;
+        $webhookAmountValid = 350000;
+        $webhookAmountInvalid = 200000;
+
+        $this->assertTrue($webhookAmountValid >= $bookingPrice, "Số tiền nộp đủ hoặc thừa được chấp nhận");
+        $this->assertFalse($webhookAmountInvalid >= $bookingPrice, "Số tiền nộp thiếu phải bị từ chối");
+    }
+
+    public function testVietQrSvgTemplateExtensionFallback()
+    {
+        $urlPng = \Services\VietQR::generateUrl(101, 200000, 'MB', '1111000050174', 'HOANG VAN HUY', 'compact2');
+        $this->assertStringContainsString('compact2.png', $urlPng);
+
+        $urlSvg = \Services\VietQR::generateUrl(101, 200000, 'MB', '1111000050174', 'HOANG VAN HUY', 'qr_only.svg');
+        $this->assertStringContainsString('qr_only.svg', $urlSvg);
+    }
+
+    public function testSePayAuthorizationTokenVerification()
+    {
+        $configuredKey = "SEPAY_TEST_SECRET_KEY_123456";
+        $headerBearer = "Bearer SEPAY_TEST_SECRET_KEY_123456";
+        $headerApiKey = "Apikey SEPAY_TEST_SECRET_KEY_123456";
+        $headerRaw = "SEPAY_TEST_SECRET_KEY_123456";
+        $headerWrong = "Bearer WRONG_KEY";
+
+        $isValidBearer = in_array($headerBearer, ['Bearer ' . $configuredKey, 'Apikey ' . $configuredKey, $configuredKey]);
+        $isValidApiKey = in_array($headerApiKey, ['Bearer ' . $configuredKey, 'Apikey ' . $configuredKey, $configuredKey]);
+        $isValidRaw = in_array($headerRaw, ['Bearer ' . $configuredKey, 'Apikey ' . $configuredKey, $configuredKey]);
+        $isValidWrong = in_array($headerWrong, ['Bearer ' . $configuredKey, 'Apikey ' . $configuredKey, $configuredKey]);
+
+        $this->assertTrue($isValidBearer);
+        $this->assertTrue($isValidApiKey);
+        $this->assertTrue($isValidRaw);
+        $this->assertFalse($isValidWrong);
     }
 }

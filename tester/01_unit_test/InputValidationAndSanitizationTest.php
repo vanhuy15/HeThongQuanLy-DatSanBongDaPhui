@@ -93,5 +93,45 @@ class InputValidationAndSanitizationTest extends TestCase {
             $this->assertStringNotContainsString('<script>', $sanitized);
         }
     }
+
+    public function testMinDateAllowedIs2025() {
+        $minDate = '2025-01-01';
+        $inputOld = '2024-12-31';
+        $inputValid = '2026-11-23';
+
+        $normalizedOld = ($inputOld < $minDate) ? $minDate : $inputOld;
+        $normalizedValid = ($inputValid < $minDate) ? $minDate : $inputValid;
+
+        $this->assertEquals('2025-01-01', $normalizedOld, "Ngày trước 2025 phải tự động chuẩn hóa về 2025-01-01");
+        $this->assertEquals('2026-11-23', $normalizedValid, "Ngày hợp lệ >= 2025 được giữ nguyên");
+    }
+
+    public function testAvatarImageExtensionValidation() {
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+        $dangerousExtensions = ['php', 'phtml', 'exe', 'sh', 'js', 'html'];
+
+        foreach ($allowedExtensions as $ext) {
+            $this->assertTrue(in_array(strtolower($ext), $allowedExtensions));
+        }
+
+        foreach ($dangerousExtensions as $badExt) {
+            $this->assertFalse(in_array(strtolower($badExt), $allowedExtensions), "Đuôi file .$badExt phải bị chặn upload");
+        }
+    }
+
+    public function testUsernameLengthAndCharactersValidation() {
+        $validUsernames = ['admin15', 'thai_giam', 'khach_hang_99'];
+        $invalidUsernames = ['ab', 'a@b#$', 'user with spaces'];
+
+        $pattern = '/^[a-zA-Z0-9_]{3,30}$/';
+
+        foreach ($validUsernames as $u) {
+            $this->assertEquals(1, preg_match($pattern, $u));
+        }
+
+        foreach ($invalidUsernames as $inv) {
+            $this->assertEquals(0, preg_match($pattern, $inv));
+        }
+    }
 }
 

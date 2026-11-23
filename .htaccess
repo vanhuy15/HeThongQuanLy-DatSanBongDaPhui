@@ -2,6 +2,10 @@
     RewriteEngine On
     RewriteBase /quanlysanbong/
 
+    # Hỗ trợ truyền Authorization header cho Webhook API (SePAY, Casso) trên Apache XAMPP
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
     # Bỏ qua không rewrite các thư mục và tập tin vật lý thực tế (css, js, assets, admin, images...)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

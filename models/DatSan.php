@@ -20,7 +20,68 @@ class DatSan
      */
     public static function cleanupExpiredBookings()
     {
+        self::autoCancelExpiredHolds(10);
         Database::cleanupExpiredBookings();
+    }
+
+    /**
+     * Tự động hủy các đơn Chờ thanh toán quá thời gian quy định (mặc định 10 phút)
+     * và lập tức giải phóng slot CSDL để người khác có thể đặt sân ngay.
+     * @return int Số lượng đơn đã được tự động hủy
+     */
+    public static function autoCancelExpiredHolds(int $holdDurationMinutes = 10): int
+    {
+        $conn = Database::getConnection();
+
+        // 1. Tìm tất cả đơn Chờ thanh toán quá thời hạn (hoặc Chờ xác nhận nhưng chưa thanh toán quá 10 phút)
+        $stmt = $conn->prepare("
+            SELECT ds.dat_san_id, ds.nguoi_dung_id, sb.ten_san, ds.ngay_dat
+            FROM dat_san ds
+            JOIN khung_gio kg ON ds.khung_gio_id = kg.khung_gio_id
+            JOIN san_bong sb ON kg.san_id = sb.san_id
+            LEFT JOIN thanh_toan tt ON ds.dat_san_id = tt.dat_san_id
+            WHERE ds.deleted_at IS NULL
+              AND (
+                  (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(MINUTE, ds.ngay_tao, NOW()) >= ?)
+                  OR (ds.trang_thai = 'Chờ xác nhận' AND tt.thanh_toan_id IS NULL AND TIMESTAMPDIFF(MINUTE, ds.ngay_tao, NOW()) >= ?)
+              )
+        ");
+        if (!$stmt) {
+            return 0;
+        }
+        $stmt->bind_param("ii", $holdDurationMinutes, $holdDurationMinutes);
+        $stmt->execute();
+        $expiredBookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        if (empty($expiredBookings)) {
+            return 0;
+        }
+
+        $ids = array_column($expiredBookings, 'dat_san_id');
+        $idList = implode(',', array_map('intval', $ids));
+
+        // 2. Chuyển trạng thái đơn sang 'Đã hủy'
+        $conn->query("UPDATE dat_san SET trang_thai = 'Đã hủy' WHERE dat_san_id IN ($idList)");
+
+        // 3. Giải phóng slot trong dat_san_slots (trang_thai = 'released')
+        $conn->query("UPDATE dat_san_slots SET trang_thai = 'released' WHERE dat_san_id IN ($idList)");
+
+        // 4. Gửi thông báo cho từng khách hàng
+        require_once __DIR__ . '/Notification.php';
+        if (class_exists('\\Models\\Notification')) {
+            foreach ($expiredBookings as $b) {
+                \Models\Notification::create(
+                    (int)$b['nguoi_dung_id'],
+                    "Đơn đặt sân #{$b['dat_san_id']} đã tự động hủy",
+                    "Đơn đặt sân " . $b['ten_san'] . " ngày " . date('d/m/Y', strtotime($b['ngay_dat'])) . " đã tự động hủy do quá thời hạn thanh toán 10 phút. Sân đã được giải phóng cho khách hàng khác.",
+                    'dat_san',
+                    "index.php?controller=User&action=history"
+                );
+            }
+        }
+
+        return count($expiredBookings);
     }
 
     /**
@@ -28,6 +89,7 @@ class DatSan
      */
     public static function getLockedSubPitches($khung_gio_id, $ngay_dat)
     {
+        self::autoCancelExpiredHolds(10);
         $conn = Database::getConnection();
         $stmt = $conn->prepare("
             SELECT ten_san_con, san_con_khoa 
@@ -66,6 +128,7 @@ class DatSan
      */
     public static function bookWithLock($nguoi_dung_id, $khung_gio_id, $ngay_dat, $loai_san_dat, $ten_san_con, $san_con_khoa)
     {
+        self::autoCancelExpiredHolds(10);
         $conn = Database::getConnection();
 
         // 1. Kiểm tra điểm uy tín khách hàng
@@ -376,9 +439,33 @@ class DatSan
     }
 
     /**
+     * Lấy danh sách các đơn chờ duyệt gần nhất
+     */
+    public static function getRecentPending(int $limit = 4): array
+    {
+        $conn = Database::getConnection();
+        $stmt = $conn->prepare("
+            SELECT ds.dat_san_id, ds.ngay_dat, ds.ten_san_con, nd.ho_ten, sb.ten_san, kg.gio_bat_dau, kg.gio_ket_thuc
+            FROM dat_san ds
+            JOIN nguoi_dung nd ON ds.nguoi_dung_id = nd.nguoi_dung_id
+            JOIN khung_gio kg ON ds.khung_gio_id = kg.khung_gio_id
+            JOIN san_bong sb ON kg.san_id = sb.san_id
+            WHERE ds.trang_thai = 'Chờ xác nhận' AND ds.deleted_at IS NULL
+            ORDER BY ds.dat_san_id DESC
+            LIMIT ?
+        ");
+        $stmt->bind_param("i", $limit);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+        return $res;
+    }
+
+    /**
      * Tính toán mức phạt điểm uy tín khi hủy đơn
      */
-    public static function calculateCancellationPenalty(float $hoursUntilMatch, bool $isConfirmed, string $paymentMethod = 'tien_mat'): array {
+    public static function calculateCancellationPenalty(float $hoursUntilMatch, bool $isConfirmed, string $paymentMethod = 'tien_mat'): array
+    {
         $penaltyPoints = 0;
         $penaltyMsg = "";
         if ($isConfirmed) {
@@ -399,7 +486,8 @@ class DatSan
     /**
      * Kiểm tra xung đột khóa chéo sân ghép đa năng
      */
-    public static function checkCompoundPitchConflict(string $targetSanCon, ?string $targetSanConKhoa, array $existingBookings): bool {
+    public static function checkCompoundPitchConflict(string $targetSanCon, ?string $targetSanConKhoa, array $existingBookings): bool
+    {
         foreach ($existingBookings as $b) {
             $bookedSanCon = $b['ten_san_con'] ?? '';
             $bookedKhoa = $b['san_con_khoa'] ?? null;
@@ -432,7 +520,8 @@ class DatSan
     /**
      * Lấy số giây giữ chỗ còn lại của đơn Chờ thanh toán
      */
-    public static function getRemainingHoldTime(string $createdAt, int $holdDurationSeconds = 600): int {
+    public static function getRemainingHoldTime(string $createdAt, int $holdDurationSeconds = 600): int
+    {
         $elapsed = time() - strtotime($createdAt);
         return max(0, $holdDurationSeconds - $elapsed);
     }
@@ -440,7 +529,8 @@ class DatSan
     /**
      * Kiểm tra đơn đã hết hạn giữ chỗ hay chưa
      */
-    public static function isHoldExpired(string $createdAt, string $status, int $holdDurationSeconds = 600): bool {
+    public static function isHoldExpired(string $createdAt, string $status, int $holdDurationSeconds = 600): bool
+    {
         if ($status !== 'Chờ thanh toán') {
             return false;
         }

@@ -1,7 +1,9 @@
 <?php
+
 namespace Services;
 
-class VietQR {
+class VietQR
+{
     public const DEFAULT_BANK_ID = 'MB';
     public const DEFAULT_TEMPLATE = 'compact2';
 
@@ -21,13 +23,19 @@ class VietQR {
         $accountName = $accountName ?: ($_ENV['VIETQR_ACCOUNT_NAME'] ?? getenv('VIETQR_ACCOUNT_NAME') ?: 'SAN BONG PITCH');
         $template = $template ?: ($_ENV['VIETQR_TEMPLATE'] ?? getenv('VIETQR_TEMPLATE') ?: self::DEFAULT_TEMPLATE);
 
+        // Chuẩn hóa phần mở rộng file (nếu chưa có đuôi file thì thêm .png)
+        if (!preg_match('/\.(png|svg|jpg)$/i', $template)) {
+            $templateFile = $template . '.png';
+        } else {
+            $templateFile = $template;
+        }
+
         $addInfo = urlencode("DATSAN " . $bookingId);
         $encodedName = urlencode($accountName);
 
-        return "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png"
+        return "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$templateFile}"
             . "?amount={$amount}"
             . "&addInfo={$addInfo}"
             . "&accountName={$encodedName}";
     }
 }
-

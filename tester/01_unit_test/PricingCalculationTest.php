@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/bootstrap.php';
 
 use PHPUnit\Framework\TestCase;
 
@@ -46,5 +47,18 @@ class PricingCalculationTest extends TestCase
 
         $giaHienThi = \Models\SanBong::calculateDisplayPrice($giaGoc, 'san_7', $quyTacGhep, $giaTienSan7);
         $this->assertEquals(320000, $giaHienThi, "Mặc định nhân hệ số 1.6x khi quy tắc ghép <= 0");
+    }
+
+    public function testDisplayPriceFormatVndFormatting()
+    {
+        $price = 350000;
+        $formatted = number_format($price) . ' đ';
+        $this->assertEquals('350,000 đ', $formatted);
+    }
+
+    public function testZeroPriceFallbackHandledGracefully()
+    {
+        $giaHienThi = \Models\SanBong::calculateDisplayPrice(0, 'san_5');
+        $this->assertEquals(0, $giaHienThi);
     }
 }

@@ -36,6 +36,9 @@ class DatSanController extends Controller {
     }
 
     public function getSchedule() {
+        // Tự động hủy và giải phóng sân cho các đơn giữ chỗ quá 10 phút chưa thanh toán
+        \Models\DatSan::autoCancelExpiredHolds(10);
+
         // Trả về giao diện lịch đặt sân qua AJAX
         $san_id = intval($_GET['san_id'] ?? 0);
         $min_allowed = max('2025-01-01', date('Y-m-d'));
@@ -118,6 +121,9 @@ class DatSanController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_SESSION['nguoi_dung_id']) || ($_SESSION['vai_tro'] ?? '') !== 'khach_hang') {
             $this->jsonResponse(['success' => false, 'message' => 'Vui lòng đăng nhập tài khoản người dùng để đặt sân']);
         }
+
+        // Tự động hủy và giải phóng sân cho các đơn giữ chỗ quá 10 phút chưa thanh toán
+        \Models\DatSan::autoCancelExpiredHolds(10);
 
         $nguoi_dung_id = $_SESSION['nguoi_dung_id'];
         $khung_gio_id = intval($_POST['khung_gio_id'] ?? 0);

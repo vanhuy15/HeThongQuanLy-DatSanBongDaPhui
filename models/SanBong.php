@@ -107,7 +107,8 @@ class SanBong
     /**
      * Tính toán giá hiển thị dựa trên chế độ xem (sân 5 hoặc sân 7), quy tắc ghép và đơn giá
      */
-    public static function calculateDisplayPrice(float|int $giaGoc, string $viewMode, int $quyTacGhep = 0, float|int|null $giaTienSan7 = null): float|int {
+    public static function calculateDisplayPrice(float|int $giaGoc, string $viewMode, int $quyTacGhep = 0, float|int|null $giaTienSan7 = null): float|int
+    {
         if ($viewMode === 'san_7') {
             if (!empty($giaTienSan7) && $giaTienSan7 > 0) {
                 return (int)$giaTienSan7;

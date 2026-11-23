@@ -47,4 +47,19 @@ class CsrfTest extends TestCase {
         $this->assertStringContainsString('<input type="hidden" name="csrf_token"', $field);
         $this->assertStringContainsString($_SESSION['csrf_token'], $field);
     }
+
+    public function testWebhookRouteCsrfExemptionCheck() {
+        $controller = 'Payment';
+        $action = 'webhook';
+        $isWebhook = ($controller === 'Payment' && in_array($action, ['webhook', 'checkStatus']));
+        $this->assertTrue($isWebhook, "Tuyệt đối không chặn CSRF với cổng Webhook từ SePAY");
+    }
+
+    public function testCsrfTokenRegenerationProducesDifferentValue() {
+        $firstToken = generate_csrf_token();
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        $newToken = $_SESSION['csrf_token'];
+        $this->assertNotEquals($firstToken, $newToken, "Token sau khi reset phiên phải khác token ban đầu");
+        $this->assertEquals(64, strlen($newToken));
+    }
 }

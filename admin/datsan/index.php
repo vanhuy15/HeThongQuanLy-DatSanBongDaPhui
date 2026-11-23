@@ -1,5 +1,9 @@
 <?php
 require_once dirname(__DIR__) . '/bootstrap.php';
+
+// Tự động hủy và giải phóng các đơn giữ chỗ quá 10 phút chưa thanh toán
+\Models\DatSan::autoCancelExpiredHolds(10);
+
 include '../header_admin.php';
 
 // --- 1. BỘ LỌC NGÀY VÀ TRẠNG THÁI ---
@@ -157,11 +161,37 @@ $result = $stmt->get_result();
         </a>
     </div>
 
+    <!-- BULK ACTIONS FLOATING BAR -->
+    <div id="bulkActionBar" style="display: none; background: #0f172a; color: white; padding: 12px 20px; border-radius: 12px; margin: 12px 16px; align-items: center; justify-content: space-between; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: fadeIn 0.2s ease;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-weight: 700; font-size: 0.92rem;"><i class="fas fa-check-square" style="color: #10b981;"></i> Đã chọn: <strong id="bulkSelectedCount" style="color: #38bdf8;">0</strong> đơn</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="submitBulkAction('xacnhan_all')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-check-double"></i> Duyệt tất cả đơn đã chọn
+            </button>
+            <button type="button" onclick="submitBulkAction('huy_all')" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-trash-alt"></i> Hủy các đơn đã chọn
+            </button>
+        </div>
+    </div>
+
+    <!-- FORM SUBMIT HÀNG LOẠT (ẨN) -->
+    <form id="bulkActionForm" method="POST" action="capnhat.php" style="display:none;">
+        <?php echo function_exists('csrf_field') ? csrf_field() : ''; ?>
+        <input type="hidden" name="bulk_action" id="bulkActionInput" value="">
+        <input type="hidden" name="status_return" value="<?php echo htmlspecialchars($status_filter); ?>">
+        <div id="bulkIdsContainer"></div>
+    </form>
+
     <!-- TABLE DATA -->
     <div class="admin-table-responsive">
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th style="width: 38px; text-align: center;">
+                        <input type="checkbox" id="selectAllBookings" onclick="toggleSelectAllBookings(this)" title="Chọn tất cả">
+                    </th>
                     <th>MÃ ĐƠN</th>
                     <th>KHÁCH HÀNG</th>
                     <th>SÂN CON</th>
@@ -175,13 +205,17 @@ $result = $stmt->get_result();
                 <?php if ($result && $result->num_rows > 0): ?>
                     <?php while($row = $result->fetch_assoc()): 
                         $first_char = mb_substr(trim($row['ho_ten']), 0, 1, 'UTF-8');
-                        $uy_tin = (int)($row['diem_uy_tin'] ?? 100);
                         $gia_hien_thi = ($row['loai_san_dat'] === 'san_7' && !empty($row['gia_tien_san_7'])) ? $row['gia_tien_san_7'] : $row['gia_tien'];
                         
                         $end_match_time = strtotime($row['ngay_dat'] . ' ' . $row['gio_ket_thuc']);
                         $is_match_past = ($end_match_time < time());
                     ?>
                     <tr>
+                        <!-- Checkbox chọn đơn -->
+                        <td style="text-align: center; vertical-align: middle;">
+                            <input type="checkbox" name="booking_ids[]" value="<?php echo $row['dat_san_id']; ?>" class="booking-item-check" onchange="updateBulkActionUI()">
+                        </td>
+
                         <!-- Mã Đơn -->
                         <td>
                             <strong style="color: var(--text-heading); font-size: 0.92rem;">#PM-<?php echo $row['dat_san_id']; ?></strong>
@@ -199,17 +233,6 @@ $result = $stmt->get_result();
                                 <div class="user-cell-info">
                                     <span class="user-cell-name"><?php echo htmlspecialchars($row['ho_ten']); ?></span>
                                     <span class="user-cell-sub"><?php echo htmlspecialchars($row['sdt']); ?></span>
-                                    <div>
-                                        <?php if(!empty($row['so_lan_bung_san']) && (int)$row['so_lan_bung_san'] > 0): ?>
-                                            <span class="reputation-badge rep-danger" title="CẢNH BÁO: Khách từng bùng sân <?php echo $row['so_lan_bung_san']; ?> lần! Điểm uy tín hiện tại: <?php echo $uy_tin; ?>/100">
-                                                <i class="fas fa-exclamation-triangle" style="font-size: 0.72rem;"></i> Bùng <?php echo $row['so_lan_bung_san']; ?> lần (<?php echo $uy_tin; ?>đ)
-                                            </span>
-                                        <?php else: ?>
-                                            <span class="reputation-badge <?php echo $uy_tin >= 80 ? 'rep-high' : ($uy_tin >= 60 ? 'rep-warn' : 'rep-danger'); ?>" title="Điểm uy tín khách hàng: <?php echo $uy_tin; ?>/100">
-                                                <i class="<?php echo $uy_tin >= 80 ? 'fas fa-shield-alt' : ($uy_tin >= 60 ? 'fas fa-info-circle' : 'fas fa-exclamation-circle'); ?>" style="font-size: 0.72rem;"></i> Uy tín: <?php echo $uy_tin; ?>/100
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -358,7 +381,7 @@ $result = $stmt->get_result();
                     <?php endwhile; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="7" style="padding: 50px 20px; text-align: center; color: var(--text-muted);">
+                        <td colspan="8" style="padding: 50px 20px; text-align: center; color: var(--text-muted);">
                             <i class="far fa-folder-open" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
                             <p style="font-weight: 500; font-size: 0.95rem;">Không có đơn đặt sân nào phù hợp với bộ lọc</p>
                         </td>
@@ -417,6 +440,53 @@ $result = $stmt->get_result();
         </div>
     </div>
 </div>
+
+<script>
+function toggleSelectAllBookings(master) {
+    const checks = document.querySelectorAll('.booking-item-check');
+    checks.forEach(c => c.checked = master.checked);
+    updateBulkActionUI();
+}
+
+function updateBulkActionUI() {
+    const checks = document.querySelectorAll('.booking-item-check:checked');
+    const bar = document.getElementById('bulkActionBar');
+    const countSpan = document.getElementById('bulkSelectedCount');
+    if (checks.length > 0) {
+        bar.style.display = 'flex';
+        countSpan.textContent = checks.length;
+    } else {
+        bar.style.display = 'none';
+        const master = document.getElementById('selectAllBookings');
+        if (master) master.checked = false;
+    }
+}
+
+function submitBulkAction(actionType) {
+    const checks = document.querySelectorAll('.booking-item-check:checked');
+    if (checks.length === 0) {
+        alert('Vui lòng chọn ít nhất 1 đơn đặt sân!');
+        return;
+    }
+    const msg = (actionType === 'xacnhan_all') 
+        ? 'Bạn có chắc chắn muốn DUYỆT TẤT CẢ ' + checks.length + ' đơn đã chọn?' 
+        : 'Bạn có chắc chắn muốn HỦY ' + checks.length + ' đơn đã chọn và giải phóng slot?';
+    if (!confirm(msg)) return;
+
+    const form = document.getElementById('bulkActionForm');
+    const container = document.getElementById('bulkIdsContainer');
+    document.getElementById('bulkActionInput').value = actionType;
+    container.innerHTML = '';
+    checks.forEach(c => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = 'booking_ids[]';
+        inp.value = c.value;
+        container.appendChild(inp);
+    });
+    form.submit();
+}
+</script>
 
 <?php 
 $stmt->close();

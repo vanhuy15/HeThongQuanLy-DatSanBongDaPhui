@@ -64,6 +64,18 @@ function toggleNotifDropdown(e) {
 }
 
 /**
+ * Mark all admin notifications read
+ */
+function markAllAdminNotificationsRead(e) {
+  if (e) e.stopPropagation();
+  const badge = document.getElementById("adminNotifBadge");
+  if (badge) badge.style.display = "none";
+  document.querySelectorAll(".notification-item.unread").forEach(function (item) {
+    item.classList.remove("unread");
+  });
+}
+
+/**
  * Toggle Add Pitch Form (Sân bóng)
  */
 function toggleAddForm() {

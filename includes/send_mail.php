@@ -6,7 +6,7 @@ require_once __DIR__ . '/PHPMailer/Exception.php';
 require_once __DIR__ . '/PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/SMTP.php';
 
-function sendEmail($to, $subject, $content) {
+function sendEmail($to, $subject, $content, $bcc = null) {
     // Nạp .env nếu chưa có
     $env_file = __DIR__ . '/../.env';
     if (file_exists($env_file)) {
@@ -47,7 +47,7 @@ function sendEmail($to, $subject, $content) {
         $mail->Password   = $mailPass;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = $mailPort;
-        $mail->Timeout    = 3; // Giảm timeout xuống 3s để phản hồi nhanh chóng
+        $mail->Timeout    = 2; // Giảm timeout xuống 2s để phản hồi tức thì
         $mail->SMTPAutoTLS = true;
 
         // 2. Cấu hình người gửi/nhận
@@ -55,6 +55,10 @@ function sendEmail($to, $subject, $content) {
         $fromName  = getenv('MAIL_FROM_NAME') ?: 'He Thong Dat San Bong';
         $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($to);
+
+        if (!empty($bcc) && filter_var($bcc, FILTER_VALIDATE_EMAIL) && $bcc !== $to) {
+            $mail->addBCC($bcc);
+        }
 
         // 3. Nội dung
         $mail->isHTML(true);                                  

@@ -1,6 +1,8 @@
 <?php
 // Unit Test Bootstrap for PitchManager
 
+require_once __DIR__ . '/phpunit_stubs.php';
+
 define('ROOT_DIR', dirname(__DIR__, 2));
 
 // Load .env if exists
@@ -58,4 +60,3 @@ spl_autoload_register(function ($class) {
 if (file_exists(ROOT_DIR . '/includes/csrf.php')) {
     require_once ROOT_DIR . '/includes/csrf.php';
 }
-
