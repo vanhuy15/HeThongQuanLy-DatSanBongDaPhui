@@ -1,5 +1,45 @@
-<?php include __DIR__ . '/../../includes/header.php'; ?>
-<?php include __DIR__ . '/../../includes/menu.php'; ?>
+<?php
+/**
+ * View Thanh toán đặt sân (Pure PHP MVC)
+ *
+ * @var array $dat_san
+ * @var int $dat_san_id
+ * @var array|null $existing_payment
+ * @var int|null $remaining_seconds
+ * @var string|null $error
+ * @var bool|null $is_cash_locked
+ * @var string|null $bank_id
+ * @var string|null $bank_name
+ * @var string|null $stk
+ * @var string|null $chu_tk
+ * @var string|null $noidung_ck
+ * @var int|null $so_tien_ck
+ * @var string|null $qr_url
+ */
+
+// Fallback an toàn cho static analyzer và view rendering
+$dat_san = $dat_san ?? [];
+$dat_san_id = $dat_san_id ?? (int)($_GET['dat_san_id'] ?? 0);
+$existing_payment = $existing_payment ?? null;
+$remaining_seconds = $remaining_seconds ?? 0;
+$error = $error ?? null;
+$is_cash_locked = $is_cash_locked ?? false;
+$bank_id = $bank_id ?? (getenv('VIETQR_BANK_ID') ?: "MB");
+$bank_name = $bank_name ?? (getenv('VIETQR_BANK_NAME') ?: "MB Bank");
+$stk = $stk ?? (getenv('VIETQR_ACCOUNT_NO') ?: "000000000000");
+$chu_tk = $chu_tk ?? (getenv('VIETQR_ACCOUNT_NAME') ?: "SAN BONG PITCH");
+$noidung_ck = $noidung_ck ?? ("DATSAN " . $dat_san_id);
+$so_tien_ck = $so_tien_ck ?? (int)($dat_san['gia_tien'] ?? 0);
+
+if (empty($qr_url) && class_exists('\Services\VietQR')) {
+    $qr_url = \Services\VietQR::generateUrl($dat_san_id, $so_tien_ck, $bank_id, $stk, $chu_tk, 'qr_only.svg');
+} else {
+    $qr_url = $qr_url ?? '';
+}
+
+include __DIR__ . '/../../includes/header.php';
+include __DIR__ . '/../../includes/menu.php';
+?>
 
 <div class="thanhtoan-container">
     <h2>Thanh toán - <?php echo (stripos($dat_san['ten_san'] ?? '', 'sân') === 0) ? htmlspecialchars($dat_san['ten_san']) : 'Sân ' . htmlspecialchars($dat_san['ten_san'] ?? ''); ?></h2>
@@ -46,7 +86,7 @@
             $user_diem_uy_tin = (int)($dat_san['diem_uy_tin'] ?? 100);
             $is_cash_locked = ($user_diem_uy_tin < 60);
             ?>
-            <form method="POST" id="formThanhtoan">
+            <form method="POST" id="formThanhToan">
                 <?php echo function_exists("csrf_field") ? csrf_field() : ""; ?>
                 <h3 class="payment-method-title">Chọn phương thức thanh toán:</h3>
 
@@ -83,14 +123,9 @@
                         Quét mã VietQR để thanh toán
                     </h3>
                     <?php
-                    $bank_id = getenv('VIETQR_BANK_ID') ?: "MB";
-                    $bank_name = getenv('VIETQR_BANK_NAME') ?: "MB Bank";
-                    $stk = getenv('VIETQR_ACCOUNT_NO') ?: "000000000000";
-                    $chu_tk = getenv('VIETQR_ACCOUNT_NAME') ?: "SAN BONG PITCH";
-                    $noidung_ck = "DATSAN " . $dat_san_id;
-                    $so_tien_ck = (int)$dat_san['gia_tien'];
-
-                    $qr_url = \Services\VietQR::generateUrl($dat_san_id, $so_tien_ck, $bank_id, $stk, $chu_tk, 'qr_only.svg');
+                    if (empty($qr_url) && class_exists('\Services\VietQR')) {
+                        $qr_url = \Services\VietQR::generateUrl($dat_san_id, $so_tien_ck, $bank_id, $stk, $chu_tk, 'qr_only.svg');
+                    }
                     ?>
                     <div class="qr-container">
                         <div class="qr-frame">
