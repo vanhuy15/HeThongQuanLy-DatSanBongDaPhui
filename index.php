@@ -44,7 +44,10 @@ require_once __DIR__ . '/includes/csrf.php';
 // Webhook là API máy-chủ-gọi-máy-chủ (Machine-to-Machine), xác thực qua API Key/Signature chứ không qua Session CSRF
 $is_webhook = (
     (isset($_GET['controller']) && strtolower($_GET['controller']) === 'payment' && isset($_GET['action']) && strtolower($_GET['action']) === 'webhook') ||
-    (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'action=webhook') !== false)
+    (isset($_SERVER['REQUEST_URI']) && (
+        stripos($_SERVER['REQUEST_URI'], 'action=webhook') !== false ||
+        stripos($_SERVER['REQUEST_URI'], 'payment/webhook') !== false
+    ))
 );
 
 // Xác thực mã CSRF Token toàn cục cho các yêu cầu POST thông thường từ trình duyệt
