@@ -206,13 +206,33 @@ $result = $stmt->get_result();
                 Hiển thị <strong><?php echo min(($offset + 1), $total_records); ?> - <?php echo min(($offset + $so_dong_moi_trang), $total_records); ?></strong> trong số <strong><?php echo $total_records; ?></strong> giao dịch
             </div>
             
-            <div style="display: flex; gap: 6px;">
-                <?php for ($i = 1; $i <= $tong_so_trang; $i++) : ?>
-                    <a href="chitiet.php?date=<?php echo $filter_date; ?>&method=<?php echo $pay_method; ?>&page=<?php echo $i; ?>" 
-                       style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid <?php echo ($i == $trang_hien_tai) ? 'var(--primary)' : 'var(--border)'; ?>; background: <?php echo ($i == $trang_hien_tai) ? 'var(--primary)' : '#ffffff'; ?>; color: <?php echo ($i == $trang_hien_tai) ? '#ffffff' : 'var(--text-body)'; ?>;">
-                        <?php echo $i; ?>
+            <div class="admin-pagination-box" style="margin-top: 0;">
+                <?php 
+                    $page_params = "date=" . urlencode($filter_date) . "&method=" . urlencode($pay_method);
+                    $pagination_range = function_exists('get_pagination_range') ? get_pagination_range($trang_hien_tai, $tong_so_trang, 1) : range(1, $tong_so_trang);
+                ?>
+                <?php if ($trang_hien_tai > 1): ?>
+                    <a href="chitiet.php?<?php echo $page_params; ?>&page=<?php echo $trang_hien_tai - 1; ?>" class="admin-page-btn" title="Trang trước">
+                        <i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i>
                     </a>
-                <?php endfor; ?>
+                <?php endif; ?>
+
+                <?php foreach ($pagination_range as $p): ?>
+                    <?php if ($p === '...'): ?>
+                        <span class="admin-page-ellipsis">...</span>
+                    <?php else: ?>
+                        <a href="chitiet.php?<?php echo $page_params; ?>&page=<?php echo $p; ?>" 
+                           class="admin-page-btn <?php echo ($p == $trang_hien_tai) ? 'active' : ''; ?>">
+                            <?php echo $p; ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+
+                <?php if ($trang_hien_tai < $tong_so_trang): ?>
+                    <a href="chitiet.php?<?php echo $page_params; ?>&page=<?php echo $trang_hien_tai + 1; ?>" class="admin-page-btn" title="Trang sau">
+                        <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     <?php endif; ?>

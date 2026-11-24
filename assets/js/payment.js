@@ -34,10 +34,7 @@ function initPaymentView() {
       }
     }, 1000);
 
-    if (isCashLocked) {
-      toggleQR();
     }
-  }
 
   // Bind change on radios
   document.querySelectorAll('input[name="phuong_thuc"]').forEach((radio) => {
@@ -45,29 +42,66 @@ function initPaymentView() {
   });
 }
 
+function selectPaymentMethod(type) {
+  if (type === 'tien_mat') {
+    const cashCard = document.getElementById('cardTienMat');
+    if (cashCard && cashCard.classList.contains('locked')) {
+      alert('⚠️ Điểm uy tín của bạn dưới 60đ nên phương thức Tiền mặt đã bị khóa. Vui lòng chọn VietQR!');
+      return;
+    }
+    const rTienMat = document.getElementById('radioTienMat');
+    if (rTienMat) rTienMat.checked = true;
+  } else if (type === 'chuyen_khoan') {
+    const rQR = document.getElementById('radioChuyenKhoan');
+    if (rQR) rQR.checked = true;
+  }
+  toggleQR();
+}
+
 function toggleQR() {
   const checkedRadio = document.querySelector('input[name="phuong_thuc"]:checked');
   const pt = checkedRadio ? checkedRadio.value : "";
   const qrBox = document.getElementById("chuyenKhoanBox");
+  const cashGuideBox = document.getElementById("cashGuideBox");
+  const emptyGuideBox = document.getElementById("emptyGuideBox");
   const btnWrapper = document.getElementById("submitBtnWrapper");
   const btnText = document.getElementById("submitBtnText");
   const submitBtn = document.getElementById("btnSubmitPayment");
 
+  // Highlight active payment card
+  document.querySelectorAll('.payment-card').forEach(card => card.classList.remove('selected'));
+  if (pt === "chuyen_khoan") {
+    const cardQR = document.getElementById("cardChuyenKhoan");
+    if (cardQR) cardQR.classList.add("selected");
+  } else if (pt === "tien_mat") {
+    const cardTM = document.getElementById("cardTienMat");
+    if (cardTM) cardTM.classList.add("selected");
+  }
+
   if (!pt) {
+    if (emptyGuideBox) emptyGuideBox.style.display = "flex";
     if (qrBox) qrBox.style.display = "none";
+    if (cashGuideBox) cashGuideBox.style.display = "none";
     if (btnWrapper) btnWrapper.style.display = "none";
     return;
   }
 
+  if (emptyGuideBox) emptyGuideBox.style.display = "none";
+
   if (pt === "chuyen_khoan") {
     if (qrBox) qrBox.style.display = "block";
+    if (cashGuideBox) cashGuideBox.style.display = "none";
     // Ẩn hoàn toàn nút xác nhận chuyển khoản thủ công, vì QR tự động xác nhận qua SePAY Webhook
     if (btnWrapper) btnWrapper.style.display = "none";
   } else if (pt === "tien_mat") {
     if (qrBox) qrBox.style.display = "none";
+    if (cashGuideBox) cashGuideBox.style.display = "flex";
     // Chỉ hiển thị nút xác nhận đặt sân khi người dùng chọn Tiền mặt
-    if (btnWrapper) btnWrapper.style.display = "block";
-    if (btnText) btnText.textContent = "Xác nhận đặt sân (Tiền mặt)";
+    if (btnWrapper) {
+      btnWrapper.style.display = "block";
+      btnWrapper.style.textAlign = "center";
+    }
+    if (btnText) btnText.textContent = "Xác nhận đặt sân";
     if (submitBtn) {
       submitBtn.style.background = "#0d9488";
       submitBtn.style.boxShadow = "0 4px 12px rgba(13, 148, 136, 0.25)";
@@ -176,27 +210,35 @@ function startPaymentStatusPolling(datSanId) {
 
           const form = document.getElementById('formThanhToan');
           if (form) {
+            form.className = '';
+            form.style.display = 'block';
             form.innerHTML = `
-              <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 16px; padding: 40px 20px; text-align: center; animation: modalFadeIn 0.3s ease;">
+              <div style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 20px; padding: 45px 25px; text-align: center; max-width: 520px; margin: 0 auto; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.1); animation: modalFadeIn 0.3s ease;">
                 <div style="width: 72px; height: 72px; background: #10b981; color: white; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 2.2rem; margin-bottom: 18px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);">
                   <i class="fas fa-check"></i>
                 </div>
                 <h3 style="color: #065f46; font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">
                   THANH TOÁN THÀNH CÔNG!
                 </h3>
-                <p style="color: #047857; font-size: 0.95rem; margin-bottom: 20px;">
+                <p style="color: #047857; font-size: 0.95rem; margin-bottom: 18px;">
                   Hệ thống VietQR Webhook đã tự động xác nhận đơn <strong>#${datSanId}</strong>.
                 </p>
-                <div style="color: #059669; font-size: 0.85rem; font-weight: 600;">
-                  <i class="fas fa-spinner fa-spin"></i> Đang chuyển hướng về lịch sử đặt sân...
+                <div style="color: #059669; font-size: 0.88rem; font-weight: 600;" id="redirectCountdownText">
+                  <i class="fas fa-spinner fa-spin"></i> Tự động chuyển về lịch sử đặt sân sau <span id="redirectSec">4</span> giây...
                 </div>
               </div>
             `;
+            let sec = 4;
+            const redirectSecEl = document.getElementById('redirectSec');
+            const countdownRedirect = setInterval(() => {
+              sec--;
+              if (redirectSecEl) redirectSecEl.textContent = sec;
+              if (sec <= 0) {
+                clearInterval(countdownRedirect);
+                window.location.href = 'index.php?controller=User&action=history';
+              }
+            }, 1000);
           }
-
-          setTimeout(() => {
-            window.location.href = 'index.php?controller=User&action=history';
-          }, 2200);
         } else if (data.success && data.is_cancelled) {
           clearInterval(paymentPollInterval);
           paymentPollInterval = null;

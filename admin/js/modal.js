@@ -167,54 +167,84 @@ function initReputationPagination(container) {
     // Prev Button
     const prevBtn = document.createElement('button');
     prevBtn.type = 'button';
-    prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+    prevBtn.innerHTML = '<i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i>';
+    prevBtn.title = 'Trang trước';
     prevBtn.disabled = currentPage === 1;
     prevBtn.style.cssText =
-      'padding: 5px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: ' +
+      'min-width: 32px; height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: ' +
       (currentPage === 1 ? '#f8fafc' : '#ffffff') +
       '; color: ' +
       (currentPage === 1 ? '#94a3b8' : '#334155') +
       '; cursor: ' +
       (currentPage === 1 ? 'not-allowed' : 'pointer') +
-      '; font-size: 0.78rem;';
+      '; font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;';
     prevBtn.onclick = function () {
       if (currentPage > 1) renderAdminPage(currentPage - 1);
     };
     btnContainer.appendChild(prevBtn);
 
-    // Page Number Buttons
-    for (let p = 1; p <= totalPages; p++) {
-      const pageBtn = document.createElement('button');
-      pageBtn.type = 'button';
-      pageBtn.innerText = p;
-      const isActive = p === currentPage;
-      pageBtn.style.cssText =
-        'padding: 5px 11px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; border: 1px solid ' +
-        (isActive ? '#007a64' : '#cbd5e1') +
-        '; background: ' +
-        (isActive ? '#007a64' : '#ffffff') +
-        '; color: ' +
-        (isActive ? '#ffffff' : '#334155') +
-        ';';
-      pageBtn.onclick = function () {
-        renderAdminPage(p);
-      };
-      btnContainer.appendChild(pageBtn);
+    // Page Number Buttons (Sliding Window Pagination: 1, 2, ... 6)
+    function getAdminPagiRange(current, total, delta) {
+      if (total <= 4) {
+        const arr = [];
+        for (let i = 1; i <= total; i++) arr.push(i);
+        return arr;
+      }
+      const res = [1];
+      const left = Math.max(2, current - delta);
+      const right = Math.min(total - 1, current + delta);
+      if (left > 2) res.push('...');
+      for (let j = left; j <= right; j++) res.push(j);
+      if (right < total - 1) res.push('...');
+      res.push(total);
+      return res;
     }
+
+    const pagiRange = getAdminPagiRange(currentPage, totalPages, 1);
+    pagiRange.forEach(function (item) {
+      if (item === '...') {
+        const dot = document.createElement('span');
+        dot.innerText = '...';
+        dot.className = 'admin-page-ellipsis';
+        dot.style.cssText = 'min-width: 28px; height: 32px; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: 0.85rem; user-select: none;';
+        btnContainer.appendChild(dot);
+      } else {
+        const p = item;
+        const pageBtn = document.createElement('button');
+        pageBtn.type = 'button';
+        pageBtn.innerText = p;
+        const isActive = p === currentPage;
+        pageBtn.style.cssText =
+          'min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; font-weight: 600; font-size: 0.88rem; cursor: pointer; border: 1px solid ' +
+          (isActive ? '#0d9488' : '#e2e8f0') +
+          '; background: ' +
+          (isActive ? '#0d9488' : '#ffffff') +
+          '; color: ' +
+          (isActive ? '#ffffff' : '#334155') +
+          '; box-shadow: ' +
+          (isActive ? '0 2px 4px rgba(13, 148, 136, 0.2)' : 'none') +
+          '; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;';
+        pageBtn.onclick = function () {
+          renderAdminPage(p);
+        };
+        btnContainer.appendChild(pageBtn);
+      }
+    });
 
     // Next Button
     const nextBtn = document.createElement('button');
     nextBtn.type = 'button';
-    nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+    nextBtn.innerHTML = '<i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>';
+    nextBtn.title = 'Trang sau';
     nextBtn.disabled = currentPage === totalPages;
     nextBtn.style.cssText =
-      'padding: 5px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: ' +
+      'min-width: 32px; height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: ' +
       (currentPage === totalPages ? '#f8fafc' : '#ffffff') +
       '; color: ' +
       (currentPage === totalPages ? '#94a3b8' : '#334155') +
       '; cursor: ' +
       (currentPage === totalPages ? 'not-allowed' : 'pointer') +
-      '; font-size: 0.78rem;';
+      '; font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;';
     nextBtn.onclick = function () {
       if (currentPage < totalPages) renderAdminPage(currentPage + 1);
     };

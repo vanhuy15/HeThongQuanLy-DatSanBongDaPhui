@@ -34,6 +34,7 @@ class DatSan
         $conn = Database::getConnection();
 
         // 1. Tìm tất cả đơn Chờ thanh toán quá thời hạn (hoặc Chờ xác nhận nhưng chưa thanh toán quá 10 phút)
+        $seconds = $holdDurationMinutes * 60;
         $stmt = $conn->prepare("
             SELECT ds.dat_san_id, ds.nguoi_dung_id, sb.ten_san, ds.ngay_dat
             FROM dat_san ds
@@ -42,14 +43,14 @@ class DatSan
             LEFT JOIN thanh_toan tt ON ds.dat_san_id = tt.dat_san_id
             WHERE ds.deleted_at IS NULL
               AND (
-                  (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(MINUTE, ds.ngay_tao, NOW()) >= ?)
-                  OR (ds.trang_thai = 'Chờ xác nhận' AND tt.thanh_toan_id IS NULL AND TIMESTAMPDIFF(MINUTE, ds.ngay_tao, NOW()) >= ?)
+                  (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) >= ?)
+                  OR (ds.trang_thai = 'Chờ xác nhận' AND (tt.trang_thai IS NULL OR (tt.phuong_thuc = 'chuyen_khoan' AND tt.trang_thai != 'da_thanh_toan')) AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) >= ?)
               )
         ");
         if (!$stmt) {
             return 0;
         }
-        $stmt->bind_param("ii", $holdDurationMinutes, $holdDurationMinutes);
+        $stmt->bind_param("ii", $seconds, $seconds);
         $stmt->execute();
         $expiredBookings = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
@@ -61,8 +62,8 @@ class DatSan
         $ids = array_column($expiredBookings, 'dat_san_id');
         $idList = implode(',', array_map('intval', $ids));
 
-        // 2. Chuyển trạng thái đơn sang 'Đã hủy'
-        $conn->query("UPDATE dat_san SET trang_thai = 'Đã hủy' WHERE dat_san_id IN ($idList)");
+        // 2. Chuyển trạng thái đơn sang 'Đã hủy' và đánh dấu lý do hết hạn giữ chỗ 10 phút
+        $conn->query("UPDATE dat_san SET trang_thai = 'Đã hủy', thong_tin_hoan_tien = 'expired_hold_10m' WHERE dat_san_id IN ($idList)");
 
         // 3. Giải phóng slot trong dat_san_slots (trang_thai = 'released')
         $conn->query("UPDATE dat_san_slots SET trang_thai = 'released' WHERE dat_san_id IN ($idList)");
@@ -74,7 +75,7 @@ class DatSan
                 \Models\Notification::create(
                     (int)$b['nguoi_dung_id'],
                     "Đơn đặt sân #{$b['dat_san_id']} đã tự động hủy",
-                    "Đơn đặt sân " . $b['ten_san'] . " ngày " . date('d/m/Y', strtotime($b['ngay_dat'])) . " đã tự động hủy do quá thời hạn thanh toán 10 phút. Sân đã được giải phóng cho khách hàng khác.",
+                    "Đơn đặt sân " . $b['ten_san'] . " ngày " . date('d/m/Y', strtotime($b['ngay_dat'])) . " đã tự động hủy do quá thời hạn thanh toán {$holdDurationMinutes} phút. Sân đã được giải phóng cho khách hàng khác.",
                     'dat_san',
                     "index.php?controller=User&action=history"
                 );
@@ -92,15 +93,17 @@ class DatSan
         self::autoCancelExpiredHolds(10);
         $conn = Database::getConnection();
         $stmt = $conn->prepare("
-            SELECT ten_san_con, san_con_khoa 
-            FROM dat_san 
-            WHERE khung_gio_id = ? AND ngay_dat = ? 
+            SELECT ds.ten_san_con, ds.san_con_khoa 
+            FROM dat_san ds
+            LEFT JOIN thanh_toan tt ON ds.dat_san_id = tt.dat_san_id
+            WHERE ds.khung_gio_id = ? AND ds.ngay_dat = ? 
               AND (
-                  trang_thai = 'Đã xác nhận' 
-                  OR trang_thai = 'Chờ xác nhận' 
-                  OR (trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(MINUTE, ngay_tao, NOW()) < 10)
+                  ds.trang_thai = 'Đã xác nhận' 
+                  OR (ds.trang_thai = 'Chờ xác nhận' AND (tt.phuong_thuc = 'tien_mat' OR tt.trang_thai = 'da_thanh_toan'))
+                  OR (ds.trang_thai = 'Chờ xác nhận' AND tt.phuong_thuc = 'chuyen_khoan' AND tt.trang_thai != 'da_thanh_toan' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) < 600)
+                  OR (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) < 600)
               ) 
-              AND deleted_at IS NULL
+              AND ds.deleted_at IS NULL
         ");
         $stmt->bind_param("is", $khung_gio_id, $ngay_dat);
         $stmt->execute();
@@ -123,6 +126,68 @@ class DatSan
     }
 
     /**
+     * Lấy chi tiết trạng thái từng sân con: Đã đặt (confirmed) và Đang giữ chỗ (holding)
+     * @return array ['confirmed' => array, 'holding' => array, 'locked' => array]
+     */
+    public static function getSubPitchesStatusDetails($khung_gio_id, $ngay_dat)
+    {
+        self::autoCancelExpiredHolds(10);
+        $conn = Database::getConnection();
+        $stmt = $conn->prepare("
+            SELECT ds.ten_san_con, ds.san_con_khoa, ds.trang_thai, ds.ngay_tao, tt.phuong_thuc, tt.trang_thai as tt_trang_thai 
+            FROM dat_san ds
+            LEFT JOIN thanh_toan tt ON ds.dat_san_id = tt.dat_san_id
+            WHERE ds.khung_gio_id = ? AND ds.ngay_dat = ? 
+              AND (
+                  ds.trang_thai = 'Đã xác nhận' 
+                  OR (ds.trang_thai = 'Chờ xác nhận' AND (tt.phuong_thuc = 'tien_mat' OR tt.trang_thai = 'da_thanh_toan'))
+                  OR (ds.trang_thai = 'Chờ xác nhận' AND tt.phuong_thuc = 'chuyen_khoan' AND tt.trang_thai != 'da_thanh_toan' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) < 600)
+                  OR (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) < 600)
+              ) 
+              AND ds.deleted_at IS NULL
+        ");
+        $stmt->bind_param("is", $khung_gio_id, $ngay_dat);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $confirmed = [];
+        $holding = [];
+
+        while ($r = $res->fetch_assoc()) {
+            $is_confirmed = ($r['trang_thai'] === 'Đã xác nhận' || ($r['trang_thai'] === 'Chờ xác nhận' && ($r['phuong_thuc'] === 'tien_mat' || $r['tt_trang_thai'] === 'da_thanh_toan')));
+            $pitches = [];
+            if (!empty($r['san_con_khoa'])) {
+                $parts = explode(',', $r['san_con_khoa']);
+                foreach ($parts as $p) {
+                    if (trim($p) !== '') $pitches[] = trim($p);
+                }
+            }
+            if (!empty($r['ten_san_con'])) {
+                $pitches[] = trim($r['ten_san_con']);
+            }
+
+            if ($is_confirmed) {
+                foreach ($pitches as $p) $confirmed[] = $p;
+            } else {
+                foreach ($pitches as $p) $holding[] = $p;
+            }
+        }
+        $stmt->close();
+
+        $confirmed = array_values(array_unique($confirmed));
+        $holding = array_values(array_unique($holding));
+        // Nếu sân đã được chốt confirmed thì không tính là holding nữa
+        $holding = array_values(array_diff($holding, $confirmed));
+        $locked = array_values(array_unique(array_merge($confirmed, $holding)));
+
+        return [
+            'confirmed' => $confirmed,
+            'holding' => $holding,
+            'locked' => $locked
+        ];
+    }
+
+    /**
      * Thực hiện đặt sân có cơ chế khóa dòng chống Race Condition
      * @return array ['success' => bool, 'message' => string, 'dat_san_id' => int|null]
      */
@@ -138,7 +203,7 @@ class DatSan
         if ($diem_uy_tin < 40) {
             return [
                 'success' => false,
-                'message' => "⛔ Quyền đặt sân bị khóa! Điểm uy tín của bạn hiện tại là {$diem_uy_tin}/100 (Dưới 40đ do bùng sân). Vui lòng liên hệ Hotline quản lý sân bóng để được hỗ trợ mở khóa."
+                'message' => "⛔ Tạm dừng đặt sân! Điểm uy tín của bạn hiện tại là {$diem_uy_tin}/100 (Dưới 40đ). Vui lòng liên hệ Hotline hoặc Admin để được hỗ trợ điều chỉnh điểm uy tín."
             ];
         }
 
@@ -182,15 +247,17 @@ class DatSan
 
             // FOR UPDATE: Khóa dòng ngăn chặn các transaction khác đọc/ghi cùng lúc
             $check_stmt = $conn->prepare("
-                SELECT dat_san_id, ten_san_con, san_con_khoa 
-                FROM dat_san 
-                WHERE khung_gio_id = ? AND ngay_dat = ? 
+                SELECT ds.dat_san_id, ds.ten_san_con, ds.san_con_khoa 
+                FROM dat_san ds
+                LEFT JOIN thanh_toan tt ON ds.dat_san_id = tt.dat_san_id
+                WHERE ds.khung_gio_id = ? AND ds.ngay_dat = ? 
                   AND (
-                      trang_thai = 'Đã xác nhận' 
-                      OR trang_thai = 'Chờ xác nhận' 
-                      OR (trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(MINUTE, ngay_tao, NOW()) < 10)
+                      ds.trang_thai = 'Đã xác nhận' 
+                      OR (ds.trang_thai = 'Chờ xác nhận' AND (tt.phuong_thuc = 'tien_mat' OR tt.trang_thai = 'da_thanh_toan'))
+                      OR (ds.trang_thai = 'Chờ xác nhận' AND tt.phuong_thuc = 'chuyen_khoan' AND tt.trang_thai != 'da_thanh_toan' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) < 600)
+                      OR (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) < 600)
                   ) 
-                  AND deleted_at IS NULL 
+                  AND ds.deleted_at IS NULL 
                 FOR UPDATE
             ");
             $check_stmt->bind_param("is", $khung_gio_id, $ngay_dat);

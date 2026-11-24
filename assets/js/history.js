@@ -6,7 +6,45 @@
 document.addEventListener("DOMContentLoaded", function () {
   initDateConstraints();
   initStarRatingEvents();
+  initHistoryCountdowns();
 });
+
+function initHistoryCountdowns() {
+  const countdownEls = document.querySelectorAll(".history-countdown");
+  if (!countdownEls || countdownEls.length === 0) return;
+
+  const timers = [];
+  countdownEls.forEach((el) => {
+    let seconds = parseInt(el.getAttribute("data-seconds"), 10);
+    if (isNaN(seconds)) seconds = 0;
+    const timerSpan = el.querySelector(".countdown-timer");
+    timers.push({ el, timerSpan, seconds });
+  });
+
+  const interval = setInterval(() => {
+    let allFinished = true;
+    timers.forEach((t) => {
+      if (t.seconds > 0) {
+        allFinished = false;
+        t.seconds--;
+        const m = Math.floor(t.seconds / 60);
+        const s = t.seconds % 60;
+        const formatted = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+        if (t.timerSpan) {
+          t.timerSpan.textContent = formatted;
+        }
+      } else {
+        if (t.timerSpan) {
+          t.timerSpan.textContent = "00:00 (Hết hạn)";
+        }
+        t.el.style.color = "#ef4444";
+      }
+    });
+    if (allFinished) {
+      clearInterval(interval);
+    }
+  }, 1000);
+}
 
 function getCsrfToken() {
   const meta = document.querySelector('meta[name="csrf-token"]');
@@ -79,6 +117,35 @@ function openReviewModal(datSanId, sanId, tenSan, soSao = 5, noiDung = "") {
 
 function closeReviewModal() {
   const modal = document.getElementById("reviewModal");
+  if (modal) modal.style.display = "none";
+}
+
+function openViewReviewModal(tenSan, soSao, noiDung) {
+  const modal = document.getElementById("viewReviewModal");
+  if (!modal) return;
+  const nameEl = document.getElementById("viewModalPitchName");
+  if (nameEl) nameEl.textContent = "Sân: " + tenSan;
+
+  let starsHtml = "";
+  for (let i = 1; i <= 5; i++) {
+    starsHtml += i <= soSao 
+      ? '<i class="fas fa-star" style="color: #f59e0b; margin: 0 2px;"></i>' 
+      : '<i class="far fa-star" style="color: #cbd5e1; margin: 0 2px;"></i>';
+  }
+  const starContainer = document.getElementById("viewStarContainer");
+  if (starContainer) starContainer.innerHTML = starsHtml;
+
+  const starLabel = document.getElementById("viewStarLabel");
+  if (starLabel) starLabel.textContent = soSao + "/5 Sao - Đã cộng +2 điểm uy tín";
+
+  const commentBox = document.getElementById("viewCommentBox");
+  if (commentBox) commentBox.textContent = (noiDung && noiDung.trim() !== "") ? noiDung : "(Bạn không để lại bình luận chi tiết)";
+
+  modal.style.display = "flex";
+}
+
+function closeViewReviewModal() {
+  const modal = document.getElementById("viewReviewModal");
   if (modal) modal.style.display = "none";
 }
 

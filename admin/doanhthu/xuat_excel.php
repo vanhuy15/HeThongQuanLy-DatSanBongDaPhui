@@ -162,8 +162,8 @@ echo "\xEF\xBB\xBF";
         <td colspan="2" style="background-color: #f1f5f9; font-family: 'Times New Roman', Times, serif; font-size: 13pt; font-weight: bold; text-align: center; vertical-align: middle; border: 1px solid #cbd5e1;">Hình thức thanh toán:</td>
         <td colspan="5" style="background-color: #ffffff; font-family: 'Times New Roman', Times, serif; font-size: 13pt; text-align: center; vertical-align: middle; border: 1px solid #cbd5e1;">
             <?php 
-                if ($pay_method === 'chuyen_khoan') echo 'Chuyển khoản VietQR (Đã lọc)';
-                elseif ($pay_method === 'tien_mat') echo 'Tiền mặt tại sân (Đã lọc)';
+                if ($pay_method === 'chuyen_khoan') echo 'Chuyển khoản (Đã lọc)';
+                elseif ($pay_method === 'tien_mat') echo 'Tiền mặt (Đã lọc)';
                 else echo 'Tất cả phương thức thanh toán';
             ?>
         </td>
@@ -235,10 +235,10 @@ echo "\xEF\xBB\xBF";
                 // Format phương thức thanh toán
                 if ($r['phuong_thuc'] === 'chuyen_khoan') {
                     $pt_style = 'background-color: #eff6ff; color: #1d4ed8; font-weight: bold;';
-                    $pt_label = 'Chuyển khoản VietQR';
+                    $pt_label = 'Chuyển khoản';
                 } elseif ($r['phuong_thuc'] === 'tien_mat') {
                     $pt_style = 'background-color: #ecfdf5; color: #047857; font-weight: bold;';
-                    $pt_label = 'Tiền mặt tại sân';
+                    $pt_label = 'Tiền mặt';
                 } else {
                     $pt_style = 'background-color: #f1f5f9; color: #64748b;';
                     $pt_label = 'Chưa xác định';

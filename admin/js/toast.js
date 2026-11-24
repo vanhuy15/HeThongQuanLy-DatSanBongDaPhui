@@ -3,26 +3,48 @@
  * Handles auto-dismissing notifications and floating toast alerts
  */
 
-function showAdminMessage(message, type = "success", duration = 3000) {
+function showAdminMessage(message, type = "success", duration = 4000) {
+  let container = document.getElementById("adminToastContainer");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "adminToastContainer";
+    container.style.cssText = `
+      position: fixed; top: 20px; right: 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      z-index: 999999; pointer-events: none;
+    `;
+    document.body.appendChild(container);
+  }
+
   const div = document.createElement("div");
   div.className = `admin-message ${type}`;
-  div.textContent = message;
   div.style.cssText = `
-        position: fixed; top: 20px; right: 20px; padding: 12px 22px;
-        background: ${type === "success" ? "linear-gradient(135deg, #10b981, #059669)" : "linear-gradient(135deg, #ef4444, #dc2626)"};
-        color: white; border-radius: 10px; font-weight: 600;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        opacity: 0; transform: translateY(-20px);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 99999;
-    `;
-  document.body.appendChild(div);
+    pointer-events: auto;
+    padding: 12px 18px;
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid ${type === "success" ? "#0d9488" : "#ef4444"};
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0; transform: translateX(30px);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  `;
+  const icon = type === "success" ? "fa-bell" : "fa-exclamation-circle";
+  const iconColor = type === "success" ? "#0d9488" : "#ef4444";
+  div.innerHTML = `<i class="fas ${icon}" style="color: ${iconColor}; font-size: 1rem;"></i> <span style="flex: 1;">${message}</span> <button type="button" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;line-height:1;padding:0 0 0 8px;" onclick="this.parentElement.remove()">&times;</button>`;
+
+  container.appendChild(div);
   setTimeout(() => {
     div.style.opacity = "1";
-    div.style.transform = "translateY(0)";
+    div.style.transform = "translateX(0)";
   }, 10);
   setTimeout(() => {
     div.style.opacity = "0";
-    div.style.transform = "translateY(-20px)";
+    div.style.transform = "translateX(30px)";
     setTimeout(() => div.remove(), 400);
   }, duration);
 }
@@ -68,6 +90,8 @@ function playAdminAudioChime() {
  * Polling kiểm tra số lượng đơn chờ duyệt mới cho Admin theo thời gian thực
  */
 let lastAdminPendingCount = null;
+let lastAdminPendingConfirm = null;
+let lastAdminPendingRefund = null;
 
 function initAdminRealtimeNotification() {
   const bellBtn = document.getElementById('notifBellBtn');
@@ -79,11 +103,26 @@ function initAdminRealtimeNotification() {
       .then(data => {
         if (data.success) {
           const currentCount = parseInt(data.count, 10);
-          if (lastAdminPendingCount !== null && currentCount > lastAdminPendingCount) {
-            playAdminAudioChime();
-            showAdminMessage('🔔 Có đơn đặt sân mới cần duyệt! (Tổng: ' + currentCount + ')', 'success', 5000);
+          const currentConfirm = parseInt(data.pending_confirm ?? 0, 10);
+          const currentRefund = parseInt(data.pending_refund ?? 0, 10);
+
+          if (lastAdminPendingCount !== null) {
+            // Có yêu cầu hoàn tiền mới từ khách
+            if (lastAdminPendingRefund !== null && currentRefund > lastAdminPendingRefund) {
+              playAdminAudioChime();
+              const diffRf = currentRefund - lastAdminPendingRefund;
+              showAdminMessage('Bạn có ' + (diffRf > 1 ? diffRf + ' yêu cầu hoàn tiền mới!' : '1 yêu cầu hoàn tiền mới cần xử lý!'), 'success', 5000);
+            } 
+            // Có đơn đặt sân mới (tiền mặt hoặc chuyển khoản) cần duyệt
+            else if (lastAdminPendingConfirm !== null && currentConfirm > lastAdminPendingConfirm) {
+              playAdminAudioChime();
+              const diffCf = currentConfirm - lastAdminPendingConfirm;
+              showAdminMessage('Bạn có ' + (diffCf > 1 ? diffCf + ' đơn đặt sân mới cần duyệt!' : '1 đơn đặt sân mới cần duyệt!'), 'success', 5000);
+            }
           }
           lastAdminPendingCount = currentCount;
+          lastAdminPendingConfirm = currentConfirm;
+          lastAdminPendingRefund = currentRefund;
 
           let badge = bellBtn.querySelector('#adminNotifBadge') || bellBtn.querySelector('.notification-badge');
           if (badge) {
@@ -99,9 +138,9 @@ function initAdminRealtimeNotification() {
       .catch(err => console.error(err));
   }
 
-  // Khởi động kiểm tra và lặp lại mỗi 20 giây
+  // Khởi động kiểm tra và lặp lại mỗi 15 giây
   checkAdminPending();
-  setInterval(checkAdminPending, 20000);
+  setInterval(checkAdminPending, 15000);
 }
 
 document.addEventListener('DOMContentLoaded', initAdminRealtimeNotification);

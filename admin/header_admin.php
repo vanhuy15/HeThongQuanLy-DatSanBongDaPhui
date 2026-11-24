@@ -111,7 +111,7 @@ $current_uri = $_SERVER['REQUEST_URI'];
                     </a>
                 </li>
                 <li>
-                    <a href="/quanlysanbong/admin/khunggio/" class="<?php echo $is_khunggio ? 'active' : ''; ?>">
+                    <a href="/quanlysanbong/admin/khunggio/index.php?san_id=1" class="<?php echo $is_khunggio ? 'active' : ''; ?>">
                         <i class="fas fa-clock fa-fw"></i>
                         <span class="text">Khung giờ &amp; Giá</span>
                     </a>

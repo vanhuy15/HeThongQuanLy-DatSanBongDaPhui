@@ -37,11 +37,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function toggleFilterPanel() {
   const panel = document.getElementById("filterPanel");
+  const btn = document.getElementById("filterToggleBtn");
   if (!panel) return;
   if (panel.style.display === "none" || panel.style.display === "") {
     panel.style.display = "block";
+    if (btn) btn.classList.add("filter-open");
   } else {
     panel.style.display = "none";
+    if (btn) btn.classList.remove("filter-open");
   }
 }
 

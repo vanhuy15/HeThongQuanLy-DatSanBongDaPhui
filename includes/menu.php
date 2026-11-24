@@ -17,7 +17,7 @@ function isActive($expectedCtrl, $currentCtrl) {
         <nav class="main-menu">
             <ul>
                 <li><a href="index.php" class="<?php echo isActive('Home', $ctrl); ?>"><i class="fas fa-home"></i> Trang chủ</a></li>
-                <li><a href="index.php?controller=DatSan&action=book" class="<?php echo isActive('DatSan', $ctrl); ?>"><i class="fas fa-futbol"></i> Đặt sân</a></li>
+                <li><a href="index.php?controller=DatSan&action=book&san_id=1" class="<?php echo isActive('DatSan', $ctrl); ?>"><i class="fas fa-futbol"></i> Đặt sân</a></li>
                 <li><a href="index.php?controller=User&action=history" class="<?php echo ($ctrl == 'User' && $action == 'history') ? 'active' : ''; ?>"><i class="fas fa-history"></i> Lịch sử</a></li>
             </ul>
         </nav>

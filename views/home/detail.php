@@ -201,17 +201,23 @@ function renderStars(float $n, float $size = 1.0): string {
                 <?php endforeach; ?>
 
                 <!-- Phân trang -->
-                <?php if ($total_review_pages > 1): ?>
+                <?php if ($total_review_pages > 1): 
+                    $pagination_range = function_exists('get_pagination_range') ? get_pagination_range($review_page, $total_review_pages, 1) : range(1, $total_review_pages);
+                ?>
                 <div class="pd-pagi">
                     <?php if ($review_page > 1): ?>
-                        <a href="?controller=Home&action=detail&san_id=<?php echo $san['san_id']; ?>&review_page=<?php echo $review_page - 1; ?>"><i class="fas fa-chevron-left"></i></a>
+                        <a href="?controller=Home&action=detail&san_id=<?php echo $san['san_id']; ?>&review_page=<?php echo $review_page - 1; ?>" title="Trang trước"><i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i></a>
                     <?php endif; ?>
-                    <?php for ($i = 1; $i <= $total_review_pages; $i++): ?>
-                        <a href="?controller=Home&action=detail&san_id=<?php echo $san['san_id']; ?>&review_page=<?php echo $i; ?>"
-                           class="<?php echo $i == $review_page ? 'active' : ''; ?>"><?php echo $i; ?></a>
-                    <?php endfor; ?>
+                    <?php foreach ($pagination_range as $p): ?>
+                        <?php if ($p === '...'): ?>
+                            <span class="pagination-ellipsis" style="display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 32px; color: #94a3b8; font-weight: 700; font-size: 0.85rem; user-select: none;">...</span>
+                        <?php else: ?>
+                            <a href="?controller=Home&action=detail&san_id=<?php echo $san['san_id']; ?>&review_page=<?php echo $p; ?>"
+                               class="<?php echo $p == $review_page ? 'active' : ''; ?>"><?php echo $p; ?></a>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
                     <?php if ($review_page < $total_review_pages): ?>
-                        <a href="?controller=Home&action=detail&san_id=<?php echo $san['san_id']; ?>&review_page=<?php echo $review_page + 1; ?>"><i class="fas fa-chevron-right"></i></a>
+                        <a href="?controller=Home&action=detail&san_id=<?php echo $san['san_id']; ?>&review_page=<?php echo $review_page + 1; ?>" title="Trang sau"><i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i></a>
                     <?php endif; ?>
                 </div>
                 <?php endif; ?>

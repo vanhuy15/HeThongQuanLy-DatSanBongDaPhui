@@ -162,16 +162,16 @@ $result = $stmt->get_result();
     </div>
 
     <!-- BULK ACTIONS FLOATING BAR -->
-    <div id="bulkActionBar" style="display: none; background: #0f172a; color: white; padding: 12px 20px; border-radius: 12px; margin: 12px 16px; align-items: center; justify-content: space-between; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: fadeIn 0.2s ease;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-weight: 700; font-size: 0.92rem;"><i class="fas fa-check-square" style="color: #10b981;"></i> Đã chọn: <strong id="bulkSelectedCount" style="color: #38bdf8;">0</strong> đơn</span>
+    <div id="bulkActionBar" style="display: none; background: #ffffff; color: #1e293b; padding: 12px 22px; border-radius: 12px; margin: 12px 16px; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08); animation: fadeIn 0.2s ease;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-weight: 600; font-size: 0.92rem; color: #334155;">Đã chọn: <strong id="bulkSelectedCount" style="color: #0f766e; background: #ccfbf1; padding: 3px 12px; border-radius: 20px; font-size: 0.95rem; font-weight: 700; margin-left: 2px;">0</strong> đơn</span>
         </div>
         <div style="display: flex; gap: 10px;">
-            <button type="button" onclick="submitBulkAction('xacnhan_all')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                <i class="fas fa-check-double"></i> Duyệt tất cả đơn đã chọn
+            <button type="button" onclick="submitBulkAction('xacnhan_all')" style="background: #0d9488; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);">
+                Duyệt tất cả đơn đã chọn
             </button>
-            <button type="button" onclick="submitBulkAction('huy_all')" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                <i class="fas fa-trash-alt"></i> Hủy các đơn đã chọn
+            <button type="button" onclick="submitBulkAction('huy_all')" style="background: #e11d48; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);">
+                Hủy các đơn đã chọn
             </button>
         </div>
     </div>
@@ -292,7 +292,11 @@ $result = $stmt->get_result();
                             } elseif ($row['trang_thai'] == 'Đã hoàn tiền') {
                                 echo '<span class="badge badge-dahoan"><span class="badge-dot"></span> Đã hoàn tiền</span>';
                             } else {
+                                $is_expired_hold = ($row['thong_tin_hoan_tien'] === 'expired_hold_10m' || (empty($row['phuong_thuc']) && empty($row['tt_trang_thai'])));
                                 echo '<span class="badge badge-huy"><span class="badge-dot"></span> ' . htmlspecialchars($row['trang_thai']) . '</span>';
+                                if ($is_expired_hold) {
+                                    echo '<span style="font-size: 0.72rem; color: #94a3b8; display: block; margin-top: 3px; font-weight: 500;">(Hết hạn 10p)</span>';
+                                }
                             }
                             ?>
                         </td>
@@ -398,13 +402,33 @@ $result = $stmt->get_result();
                 Hiển thị <strong><?php echo min(($offset + 1), $total_records); ?> - <?php echo min(($offset + $so_luong_moi_trang), $total_records); ?></strong> trong số <strong><?php echo $total_records; ?></strong> đơn
             </div>
             
-            <div style="display: flex; gap: 6px;">
-                <?php for ($i = 1; $i <= $tong_so_trang; $i++) : ?>
-                    <a href="index.php?status=<?php echo $status_filter; ?>&page=<?php echo $i; ?><?php echo !empty($date_filter) ? '&date_filter='.urlencode($date_filter) : ''; ?>" 
-                       style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid <?php echo ($i == $trang_hien_tai) ? 'var(--primary)' : 'var(--border)'; ?>; background: <?php echo ($i == $trang_hien_tai) ? 'var(--primary)' : '#ffffff'; ?>; color: <?php echo ($i == $trang_hien_tai) ? '#ffffff' : 'var(--text-body)'; ?>;">
-                        <?php echo $i; ?>
+            <div class="admin-pagination-box" style="margin-top: 0;">
+                <?php 
+                    $page_params = "status=" . urlencode($status_filter) . (!empty($date_filter) ? '&date_filter='.urlencode($date_filter) : '');
+                    $pagination_range = function_exists('get_pagination_range') ? get_pagination_range($trang_hien_tai, $tong_so_trang, 1) : range(1, $tong_so_trang);
+                ?>
+                <?php if ($trang_hien_tai > 1): ?>
+                    <a href="index.php?<?php echo $page_params; ?>&page=<?php echo $trang_hien_tai - 1; ?>" class="admin-page-btn" title="Trang trước">
+                        <i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i>
                     </a>
-                <?php endfor; ?>
+                <?php endif; ?>
+
+                <?php foreach ($pagination_range as $p): ?>
+                    <?php if ($p === '...'): ?>
+                        <span class="admin-page-ellipsis">...</span>
+                    <?php else: ?>
+                        <a href="index.php?<?php echo $page_params; ?>&page=<?php echo $p; ?>" 
+                           class="admin-page-btn <?php echo ($p == $trang_hien_tai) ? 'active' : ''; ?>">
+                            <?php echo $p; ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+
+                <?php if ($trang_hien_tai < $tong_so_trang): ?>
+                    <a href="index.php?<?php echo $page_params; ?>&page=<?php echo $trang_hien_tai + 1; ?>" class="admin-page-btn" title="Trang sau">
+                        <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     <?php endif; ?>

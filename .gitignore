@@ -48,6 +48,9 @@ storage/
 database/backups/
 error_log
 php_errors.log
+scripts/*.exe
+scripts/cloudflared.exe
+scripts/start_tunnel.bat
 
 # =========================
 # 📊 EXPORTS TẠM THỜI

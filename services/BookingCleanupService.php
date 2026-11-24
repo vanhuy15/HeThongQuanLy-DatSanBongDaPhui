@@ -26,11 +26,11 @@ class BookingCleanupService {
         $conn->query("
             UPDATE dat_san ds
             LEFT JOIN thanh_toan tt ON ds.dat_san_id = tt.dat_san_id
-            SET ds.trang_thai = 'Đã hủy'
+            SET ds.trang_thai = 'Đã hủy', ds.thong_tin_hoan_tien = 'expired_hold_10m'
             WHERE ds.deleted_at IS NULL
               AND (
-                  (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(MINUTE, ds.ngay_tao, NOW()) >= 10)
-                  OR (ds.trang_thai = 'Chờ xác nhận' AND tt.thanh_toan_id IS NULL AND TIMESTAMPDIFF(MINUTE, ds.ngay_tao, NOW()) >= 10)
+                  (ds.trang_thai = 'Chờ thanh toán' AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) >= 600)
+                  OR (ds.trang_thai = 'Chờ xác nhận' AND (tt.trang_thai IS NULL OR (tt.phuong_thuc = 'chuyen_khoan' AND tt.trang_thai != 'da_thanh_toan')) AND TIMESTAMPDIFF(SECOND, ds.ngay_tao, NOW()) >= 600)
               )
         ");
         $stats['cancelled_unpaid'] = $conn->affected_rows > 0 ? $conn->affected_rows : 0;

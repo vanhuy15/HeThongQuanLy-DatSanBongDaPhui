@@ -57,7 +57,7 @@ class PaymentController extends Controller {
         $remaining_seconds = $expire_time - time();
 
         if ($remaining_seconds <= 0 && $dat_san['trang_thai'] === 'Chờ thanh toán' && !$existing_payment) {
-            $stmt_cancel = $conn->prepare("UPDATE dat_san SET trang_thai = 'Đã hủy' WHERE dat_san_id = ?");
+            $stmt_cancel = $conn->prepare("UPDATE dat_san SET trang_thai = 'Đã hủy', thong_tin_hoan_tien = 'expired_hold_10m' WHERE dat_san_id = ?");
             $stmt_cancel->bind_param("i", $dat_san_id);
             $stmt_cancel->execute();
             $stmt_cancel->close();
@@ -104,7 +104,7 @@ class PaymentController extends Controller {
                     'noidung_ck' => $noidung_ck,
                     'so_tien_ck' => $so_tien_ck,
                     'qr_url' => $qr_url,
-                    'error' => "⚠️ Điểm uy tín của bạn hiện tại là {$user_diem_uy_tin}/100 (Dưới 60đ). Bạn bắt buộc phải chọn Chuyển khoản VietQR!"
+                    'error' => "⚠️ Điểm uy tín của bạn hiện tại là {$user_diem_uy_tin}/100 (Dưới 60đ). Bạn bắt buộc phải chọn Chuyển khoản!"
                 ]);
                 return;
             }
@@ -320,6 +320,13 @@ class PaymentController extends Controller {
 
                 if (!$booking) {
                     $conn->rollback();
+                    continue;
+                }
+
+                // Tính chất lũy đẳng: Nếu đơn đã được xác nhận trước đó, phản hồi thành công ngay lập tức
+                if ($booking['trang_thai'] === 'Đã xác nhận') {
+                    $conn->commit();
+                    $processedCount++;
                     continue;
                 }
 
@@ -559,7 +566,7 @@ class PaymentController extends Controller {
         
         $gia = ($b['loai_san_dat'] === 'san_7' && !empty($b['gia_tien_san_7'])) ? $b['gia_tien_san_7'] : $b['gia_tien'];
         fputcsv($output, ['Tổng tiền (VNĐ)', number_format($gia)]);
-        fputcsv($output, ['Phương thức thanh toán', ($b['phuong_thuc'] === 'chuyen_khoan') ? 'Chuyển khoản VietQR' : 'Tiền mặt']);
+        fputcsv($output, ['Phương thức thanh toán', ($b['phuong_thuc'] === 'chuyen_khoan') ? 'Chuyển khoản' : 'Tiền mặt']);
         fputcsv($output, ['Trạng thái đơn', $b['trang_thai']]);
         fputcsv($output, ['Trạng thái thanh toán', ($b['tt_trang_thai'] === 'da_thanh_toan') ? 'Đã thanh toán' : 'Chờ xử lý']);
         fclose($output);

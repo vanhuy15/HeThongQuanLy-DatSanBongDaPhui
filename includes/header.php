@@ -12,13 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- CSS Core -->
-    <link rel="stylesheet" href="assets/css/main.css?v=1.0.2">
+    <link rel="stylesheet" href="assets/css/main.css?v=1.0.3">
     <?php 
         $ctrl = $_GET['controller'] ?? 'Home';
         $action = $_GET['action'] ?? 'index';
         if ($ctrl == 'Auth') echo '<link rel="stylesheet" href="assets/css/auth.css?v=1.0.2">';
-        if ($ctrl == 'DatSan' || $ctrl == 'Payment') echo '<link rel="stylesheet" href="assets/css/datsan.css?v=1.0.2">';
-        if ($ctrl == 'User') echo '<link rel="stylesheet" href="assets/css/user.css?v=1.0.2">';
+        if ($ctrl == 'DatSan' || $ctrl == 'Payment') echo '<link rel="stylesheet" href="assets/css/datsan.css?v=1.0.6">';
+        if ($ctrl == 'User') echo '<link rel="stylesheet" href="assets/css/user.css?v=1.0.3">';
         if ($ctrl == 'Home' && $action == 'detail') echo '<link rel="stylesheet" href="assets/css/detail.css?v=1.0.2">';
     ?>
     

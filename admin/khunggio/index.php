@@ -76,8 +76,17 @@ include '../header_admin.php';
 $san_list_result = $conn->query("SELECT san_id, ten_san, loai_san, quy_tac_ghep FROM san_bong ORDER BY ten_san");
 
 if ($san_id_filter == 0 && $san_list_result->num_rows > 0) {
+    // Mặc định là Sân Đại Học Sư Phạm
+    $su_pham_id = 0;
+    while ($sb = $san_list_result->fetch_assoc()) {
+        if (stripos($sb['ten_san'], 'Sư Phạm') !== false || (int)$sb['san_id'] === 1) {
+            $su_pham_id = (int)$sb['san_id'];
+            break;
+        }
+    }
+    $san_list_result->data_seek(0);
     $first_san = $san_list_result->fetch_assoc();
-    $san_id_filter = $first_san['san_id'];
+    $san_id_filter = $su_pham_id ?: $first_san['san_id'];
     $san_list_result->data_seek(0);
 }
 
@@ -227,13 +236,33 @@ $stt = $offset;
         </div>
 
         <?php if ($tong_so_trang > 1) : ?>
-            <div style="padding: 16px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 6px;">
-                <?php for ($i = 1; $i <= $tong_so_trang; $i++) : ?>
-                    <a href="index.php?san_id=<?php echo $san_id_filter; ?>&page=<?php echo $i; ?>" 
-                       style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid <?php echo ($i == $trang_hien_tai) ? 'var(--primary)' : 'var(--border)'; ?>; background: <?php echo ($i == $trang_hien_tai) ? 'var(--primary)' : '#ffffff'; ?>; color: <?php echo ($i == $trang_hien_tai) ? '#ffffff' : 'var(--text-body)'; ?>;">
-                        <?php echo $i; ?>
+            <div class="admin-pagination-box" style="margin-top: 0;">
+                <?php 
+                    $page_params = "san_id=" . urlencode($san_id_filter);
+                    $pagination_range = function_exists('get_pagination_range') ? get_pagination_range($trang_hien_tai, $tong_so_trang, 1) : range(1, $tong_so_trang);
+                ?>
+                <?php if ($trang_hien_tai > 1): ?>
+                    <a href="index.php?<?php echo $page_params; ?>&page=<?php echo $trang_hien_tai - 1; ?>" class="admin-page-btn" title="Trang trước">
+                        <i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i>
                     </a>
-                <?php endfor; ?>
+                <?php endif; ?>
+
+                <?php foreach ($pagination_range as $p): ?>
+                    <?php if ($p === '...'): ?>
+                        <span class="admin-page-ellipsis">...</span>
+                    <?php else: ?>
+                        <a href="index.php?<?php echo $page_params; ?>&page=<?php echo $p; ?>" 
+                           class="admin-page-btn <?php echo ($p == $trang_hien_tai) ? 'active' : ''; ?>">
+                            <?php echo $p; ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+
+                <?php if ($trang_hien_tai < $tong_so_trang): ?>
+                    <a href="index.php?<?php echo $page_params; ?>&page=<?php echo $trang_hien_tai + 1; ?>" class="admin-page-btn" title="Trang sau">
+                        <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+                    </a>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     </div>

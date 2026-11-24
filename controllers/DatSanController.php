@@ -16,11 +16,22 @@ class DatSanController extends Controller {
             $this->redirect('index.php?controller=Auth&action=login');
         }
 
+        // Tự động dọn dẹp các đơn giữ chỗ quá 10 phút để nhả sân xanh ngay khi vào trang đặt sân
+        DatSan::autoCancelExpiredHolds(10);
+
         $san_bongs = SanBong::getAll();
 
         $san_id_xem = isset($_GET['san_id']) ? intval($_GET['san_id']) : 0;
         if ($san_id_xem == 0 && count($san_bongs) > 0) {
-            $san_id_xem = $san_bongs[0]['san_id'];
+            // Mặc định luôn là Sân bóng đá Trường Đại Học Sư Phạm–Đà Nẵng
+            $su_pham_id = 0;
+            foreach ($san_bongs as $sb) {
+                if (stripos($sb['ten_san'], 'Sư Phạm') !== false || (int)$sb['san_id'] === 1) {
+                    $su_pham_id = (int)$sb['san_id'];
+                    break;
+                }
+            }
+            $san_id_xem = $su_pham_id ?: (int)$san_bongs[0]['san_id'];
         }
         $min_allowed = max('2025-01-01', date('Y-m-d'));
         $ngay_dat_xem = isset($_GET['ngay_dat']) ? $_GET['ngay_dat'] : date('Y-m-d');

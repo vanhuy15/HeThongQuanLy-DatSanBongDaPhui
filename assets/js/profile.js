@@ -248,56 +248,83 @@ function renderUserRepPage(page) {
   // Prev Button
   var prevBtn = document.createElement("button");
   prevBtn.type = "button";
-  prevBtn.textContent = "\u2190";
+  prevBtn.innerHTML = '<i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i>';
+  prevBtn.title = "Trang trước";
   prevBtn.disabled = userRepCurrentPage === 1;
   prevBtn.style.cssText =
-    "padding: 5px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: " +
+    "min-width: 32px; height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: " +
     (userRepCurrentPage === 1 ? "#f8fafc" : "#ffffff") +
     "; color: " +
     (userRepCurrentPage === 1 ? "#94a3b8" : "#334155") +
     "; cursor: " +
     (userRepCurrentPage === 1 ? "not-allowed" : "pointer") +
-    "; font-size: 0.82rem;";
+    "; font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;";
   prevBtn.onclick = function () {
     if (userRepCurrentPage > 1) renderUserRepPage(userRepCurrentPage - 1);
   };
   container.appendChild(prevBtn);
 
-  // Page numbers
-  for (var p = 1; p <= totalPages; p++) {
-    (function (pageNum) {
+  // Page numbers (Sliding Window Pagination: 1, 2, ... 6)
+  function getPagiRange(current, total, delta) {
+    if (total <= 4) {
+      var arr = [];
+      for (var i = 1; i <= total; i++) arr.push(i);
+      return arr;
+    }
+    var res = [1];
+    var left = Math.max(2, current - delta);
+    var right = Math.min(total - 1, current + delta);
+    if (left > 2) res.push('...');
+    for (var j = left; j <= right; j++) res.push(j);
+    if (right < total - 1) res.push('...');
+    res.push(total);
+    return res;
+  }
+
+  var pagiRange = getPagiRange(userRepCurrentPage, totalPages, 1);
+  pagiRange.forEach(function (item) {
+    if (item === '...') {
+      var dot = document.createElement("span");
+      dot.innerText = "...";
+      dot.style.cssText = "min-width: 28px; height: 32px; display: inline-flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 700; font-size: 0.85rem; user-select: none;";
+      container.appendChild(dot);
+    } else {
+      var pageNum = item;
       var pageBtn = document.createElement("button");
       pageBtn.type = "button";
       pageBtn.innerText = pageNum;
       var isActive = pageNum === userRepCurrentPage;
       pageBtn.style.cssText =
-        "padding: 5px 11px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; border: 1px solid " +
-        (isActive ? "#0d9488" : "#cbd5e1") +
+        "min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; font-weight: 600; font-size: 0.88rem; cursor: pointer; border: 1px solid " +
+        (isActive ? "#0d9488" : "#e2e8f0") +
         "; background: " +
         (isActive ? "#0d9488" : "#ffffff") +
         "; color: " +
         (isActive ? "#ffffff" : "#334155") +
-        ";";
-      pageBtn.onclick = function () {
-        renderUserRepPage(pageNum);
-      };
+        "; box-shadow: " +
+        (isActive ? "0 2px 4px rgba(13, 148, 136, 0.2)" : "none") +
+        "; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;";
+      pageBtn.onclick = (function (pVal) {
+        return function () { renderUserRepPage(pVal); };
+      })(pageNum);
       container.appendChild(pageBtn);
-    })(p);
-  }
+    }
+  });
 
   // Next Button
   var nextBtn = document.createElement("button");
   nextBtn.type = "button";
-  nextBtn.textContent = "\u2192";
+  nextBtn.innerHTML = '<i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>';
+  nextBtn.title = "Trang sau";
   nextBtn.disabled = userRepCurrentPage === totalPages;
   nextBtn.style.cssText =
-    "padding: 5px 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: " +
+    "min-width: 32px; height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: " +
     (userRepCurrentPage === totalPages ? "#f8fafc" : "#ffffff") +
     "; color: " +
     (userRepCurrentPage === totalPages ? "#94a3b8" : "#334155") +
     "; cursor: " +
     (userRepCurrentPage === totalPages ? "not-allowed" : "pointer") +
-    "; font-size: 0.82rem;";
+    "; font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;";
   nextBtn.onclick = function () {
     if (userRepCurrentPage < totalPages)
       renderUserRepPage(userRepCurrentPage + 1);

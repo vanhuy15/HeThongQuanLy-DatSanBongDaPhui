@@ -12,28 +12,28 @@
         $tier_border = "#a7f3d0";
         $tier_color = "#047857";
         $tier_bar_color = "#10b981";
-        $tier_desc = "Tài khoản VIP uy tín! Bạn được tự do đặt sân bằng cả Tiền mặt và Chuyển khoản VietQR.";
+        $tier_desc = "Được phép đặt sân bằng Tiền mặt và Chuyển khoản.";
     } elseif ($score >= 60) {
         $tier_name = "Uy Tín Tiêu Chuẩn";
         $tier_bg = "#eff6ff";
         $tier_border = "#bfdbfe";
         $tier_color = "#1d4ed8";
         $tier_bar_color = "#3b82f6";
-        $tier_desc = "Tài khoản ở trạng thái tốt. Tiếp tục duy trì để nâng hạng lên Uy Tín Xuất Sắc!";
+        $tier_desc = "Tài khoản tốt. Thi đấu đúng giờ để nâng hạng.";
     } elseif ($score >= 40) {
         $tier_name = "Cảnh Báo Uy Tín";
         $tier_bg = "#fffbeb";
         $tier_border = "#fde68a";
         $tier_color = "#b45309";
         $tier_bar_color = "#f59e0b";
-        $tier_desc = "Điểm uy tín dưới 60đ (do bùng sân). Hệ thống tạm khóa thanh toán Tiền mặt, bắt buộc Chuyển khoản VietQR.";
+        $tier_desc = "Khóa thanh toán Tiền mặt. Bắt buộc Chuyển khoản.";
     } else {
-        $tier_name = "Danh Sách Đen (Bị Khóa)";
+        $tier_name = "Hạn Chế Đặt Sân";
         $tier_bg = "#fef2f2";
         $tier_border = "#fca5a5";
         $tier_color = "#b91c1c";
         $tier_bar_color = "#ef4444";
-        $tier_desc = "Điểm uy tín dưới 40đ. Tài khoản của bạn đã bị TẠM KHÓA QUYỀN ĐẶT SÂN. Vui lòng liên hệ ban quản lý.";
+        $tier_desc = "Điểm uy tín dưới 40đ. Quyền đặt sân tạm dừng, vui lòng liên hệ Admin để được điều chỉnh điểm uy tín.";
     }
 ?>
 
@@ -109,7 +109,7 @@
                 <?php endif; ?>
 
                 <button type="button" onclick="openUserReputationModal()" style="background: #ffffff; color: <?php echo $tier_color; ?>; border: 1.5px solid <?php echo $tier_border; ?>; border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;">
-                    Xem lịch sử tín dụng
+                    Lịch sử điểm
                 </button>
             </div>
         </div>

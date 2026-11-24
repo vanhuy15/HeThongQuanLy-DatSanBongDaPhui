@@ -1,6 +1,95 @@
 <?php include __DIR__ . '/../../includes/header.php'; ?>
 <?php include __DIR__ . '/../../includes/menu.php'; ?>
 
+<style>
+/* Nút thao tác nhỏ gọn, tinh tế, chuẩn UI/UX */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 10px;
+    height: 28px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    line-height: 1;
+}
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.action-pay {
+    background: #0d9488;
+    color: #ffffff;
+    border-color: #0d9488;
+}
+.action-pay:hover {
+    background: #0f766e;
+    color: #ffffff;
+}
+.action-cancel {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+.action-cancel:hover {
+    background: #fee2e2;
+}
+.action-refund {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+}
+.action-refund:hover {
+    background: #ffedd5;
+}
+.action-review {
+    background: #f0fdf4;
+    color: #047857;
+    border-color: #a7f3d0;
+}
+.action-review:hover {
+    background: #dcfce7;
+}
+.action-review-done,
+.action-view-review {
+    background: #f8fafc;
+    color: #0f766e;
+    border-color: #cbd5e1;
+}
+.action-review-done:hover,
+.action-view-review:hover {
+    background: #f0fdfa;
+    border-color: #0d9488;
+    color: #0d9488;
+}
+.action-bank {
+    background: #faf5ff;
+    color: #7c3aed;
+    border-color: #e9d5ff;
+}
+.action-bank:hover {
+    background: #f3e8ff;
+}
+.action-badge-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e0f2fe;
+    color: #0284c7;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+</style>
+
 <div class="history-container">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
@@ -48,14 +137,14 @@
     </div>
     
     <div style="overflow-x: auto;">
-        <table class="history-table">
+        <table class="history-table lichsu-table">
             <thead>
                 <tr>
                     <th>Ngày đặt</th>
                     <th>Thông tin sân</th>
                     <th>Khung giờ</th>
                     <th>Tổng tiền</th>
-                    <th>Trạng thái</th>
+                    <th style="text-align: center;">Trạng thái</th>
                     <th style="text-align: center;">Thao tác</th>
                 </tr>
             </thead>
@@ -81,76 +170,83 @@
                         <td>
                             <span style="font-weight: 700; color: #ef4444; font-size: 1.05rem;"><?php echo number_format($gia_don); ?> đ</span>
                         </td>
-                        <td>
-                            <?php 
-                            if ($row['trang_thai'] == 'Chờ thanh toán') {
-                                $remaining_hold = \Models\DatSan::getRemainingHoldTime($row['ngay_tao'], 600);
-                                $rem_min = floor($remaining_hold / 60);
-                                $rem_sec = $remaining_hold % 60;
-                                $time_str = sprintf("%02d:%02d", $rem_min, $rem_sec);
-                                echo '<span class="status-badge" style="background:#fff7ed; color:#ea580c; border:1px solid #fed7aa;">Chờ thanh toán</span>';
-                                echo '<br><small style="color:#d97706; font-size:0.75rem; font-weight:600;"><i class="far fa-clock"></i> Còn ' . $time_str . '</small>';
-                            } elseif ($row['trang_thai'] == 'Chờ xác nhận') {
-                                if ($is_match_started) {
-                                    echo '<span class="status-badge" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;" title="Đã quá giờ thi đấu mà quản trị viên chưa duyệt">Quá hạn duyệt</span>';
+                        <td style="text-align: center; vertical-align: middle;">
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                <?php 
+                                if ($row['trang_thai'] == 'Chờ thanh toán') {
+                                    $remaining_hold = \Models\DatSan::getRemainingHoldTime($row['ngay_tao'], 600);
+                                    $rem_min = floor($remaining_hold / 60);
+                                    $rem_sec = $remaining_hold % 60;
+                                    $time_str = sprintf("%02d:%02d", $rem_min, $rem_sec);
+                                    echo '<span class="status-badge" style="background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; margin:0;">Chờ thanh toán</span>';
+                                    echo '<small class="history-countdown" data-seconds="' . $remaining_hold . '" data-id="' . $row['dat_san_id'] . '" style="color:#d97706; font-size:0.75rem; font-weight:600;"><i class="far fa-clock"></i> Còn <span class="countdown-timer">' . $time_str . '</span></small>';
+                                } elseif ($row['trang_thai'] == 'Chờ xác nhận') {
+                                    if ($is_match_started) {
+                                        echo '<span class="status-badge" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca;" title="Đã quá giờ thi đấu mà quản trị viên chưa duyệt">Quá hạn duyệt</span>';
+                                    } else {
+                                        echo '<span class="status-badge status-cho">Chờ duyệt</span>';
+                                    }
+                                } elseif ($row['trang_thai'] == 'Đã xác nhận') {
+                                    if ($is_match_finished) {
+                                        echo '<span class="status-badge" style="background:#ecfdf5; color:#047857; border:1px solid #a7f3d0;">Hoàn thành</span>';
+                                    } else {
+                                        echo '<span class="status-badge status-xacnhan">Đã xác nhận</span>';
+                                    }
+                                } elseif ($row['trang_thai'] == 'Chờ hoàn tiền') {
+                                    echo '<span class="status-badge" style="background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe;">Chờ hoàn tiền</span>';
+                                } elseif ($row['trang_thai'] == 'Đã hoàn tiền') {
+                                    echo '<span class="status-badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">Đã hoàn tiền</span>';
+                                } elseif (in_array($row['trang_thai'], ['Đã hủy', 'Hủy'])) {
+                                    echo '<span class="status-badge status-huy">Đã hủy</span>';
                                 } else {
-                                    echo '<span class="status-badge status-cho">Chờ duyệt</span>';
+                                    echo '<span class="status-badge status-huy">' . htmlspecialchars($row['trang_thai']) . '</span>';
                                 }
-                            } elseif ($row['trang_thai'] == 'Đã xác nhận') {
-                                if ($is_match_finished) {
-                                    echo '<span class="status-badge" style="background:#ecfdf5; color:#047857; border:1px solid #a7f3d0;">Hoàn thành</span>';
-                                } else {
-                                    echo '<span class="status-badge status-xacnhan">Đã xác nhận</span>';
-                                }
-                            } elseif ($row['trang_thai'] == 'Chờ hoàn tiền') {
-                                echo '<span class="status-badge" style="background:#f5f3ff; color:#6d28d9; border:1px solid #ddd6fe;">Chờ hoàn tiền</span>';
-                            } elseif ($row['trang_thai'] == 'Đã hoàn tiền') {
-                                echo '<span class="status-badge" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;">Đã hoàn tiền</span>';
-                            } else {
-                                echo '<span class="status-badge status-huy">' . htmlspecialchars($row['trang_thai']) . '</span>';
-                            }
-                            ?>
+                                ?>
+                            </div>
                         </td>
-                        <td style="text-align: center;">
+                        <td style="text-align: center; vertical-align: middle;">
                             <?php if ($row['trang_thai'] == 'Chờ thanh toán'): ?>
-                                <a href="index.php?controller=Payment&action=index&dat_san_id=<?php echo $row['dat_san_id']; ?>" style="display:inline-block; background: #0d9488; color: white; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-decoration: none; margin-bottom: 5px; box-shadow: 0 2px 4px rgba(13,148,136,0.2);">Thanh toán ngay</a>
-                                <br>
-                                <button type="button" onclick="cancelUserBooking(<?php echo $row['dat_san_id']; ?>)" class="btn-cancel-action" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" title="Hủy đơn này">
-                                    Hủy
-                                </button>
+                                <div style="display: inline-flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center;">
+                                    <a href="index.php?controller=Payment&action=index&dat_san_id=<?php echo $row['dat_san_id']; ?>" class="action-btn action-pay" title="Thanh toán ngay" style="min-width: 105px; justify-content: center;">
+                                        <i class="fas fa-credit-card"></i> Thanh toán
+                                    </a>
+                                    <button type="button" onclick="cancelUserBooking(<?php echo $row['dat_san_id']; ?>)" class="action-btn action-cancel" title="Hủy đơn này" style="min-width: 105px; justify-content: center;">
+                                        <i class="fas fa-times"></i> Hủy
+                                    </button>
+                                </div>
                             <?php elseif ($row['trang_thai'] == 'Chờ xác nhận'): ?>
                                 <?php if ($row['phuong_thuc'] === 'chuyen_khoan'): ?>
-                                    <button type="button" onclick="openRefundModal(<?php echo $row['dat_san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$gia_don; ?>)" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" title="Hủy yêu cầu và nhận lại tiền chuyển khoản">
-                                        Hủy &amp; Hoàn tiền
+                                    <button type="button" onclick="openRefundModal(<?php echo $row['dat_san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$gia_don; ?>)" class="action-btn action-refund" title="Hủy yêu cầu và nhận lại tiền chuyển khoản">
+                                        <i class="fas fa-undo-alt"></i> Hủy & Hoàn tiền
                                     </button>
                                 <?php else: ?>
-                                    <button type="button" onclick="cancelUserBooking(<?php echo $row['dat_san_id']; ?>)" class="btn-cancel-action" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" title="Hủy yêu cầu đặt sân">
-                                        Hủy đơn
+                                    <button type="button" onclick="cancelUserBooking(<?php echo $row['dat_san_id']; ?>)" class="action-btn action-cancel" title="Hủy yêu cầu đặt sân">
+                                        <i class="fas fa-times"></i> Hủy
                                     </button>
                                 <?php endif; ?>
                             <?php elseif ($row['trang_thai'] == 'Đã xác nhận'): ?>
                                 <?php if ($is_match_finished): ?>
                                     <?php if (!empty($row['danh_gia_id'])): ?>
-                                        <button type="button" onclick="openReviewModal(<?php echo $row['dat_san_id']; ?>, <?php echo $row['san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$row['so_sao']; ?>, '<?php echo addslashes($row['noi_dung'] ?? ''); ?>')" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;" title="Chỉnh sửa đánh giá">
-                                            <span style="color: #f59e0b;">★ <?php echo (int)$row['so_sao']; ?></span> Sửa đánh giá
+                                        <button type="button" onclick="openViewReviewModal('<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$row['so_sao']; ?>, '<?php echo addslashes($row['noi_dung'] ?? ''); ?>')" class="action-btn action-view-review" title="Xem lại đánh giá của bạn">
+                                            <i class="fas fa-eye"></i> Xem đánh giá
                                         </button>
                                     <?php else: ?>
-                                        <button type="button" onclick="openReviewModal(<?php echo $row['dat_san_id']; ?>, <?php echo $row['san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', 5, '')" style="background: #f0fdf4; color: #047857; border: 1px solid #a7f3d0; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;" title="Viết nhận xét đánh giá (+2 điểm uy tín)">
-                                            Đánh giá sân
+                                        <button type="button" onclick="openReviewModal(<?php echo $row['dat_san_id']; ?>, <?php echo $row['san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', 5, '')" class="action-btn action-review" title="Viết nhận xét đánh giá (+2 điểm uy tín)">
+                                            <i class="fas fa-star"></i> Đánh giá
                                         </button>
                                     <?php endif; ?>
                                 <?php elseif ($is_match_started): ?>
-                                    <span style="color: #0284c7; background: #e0f2fe; padding: 4px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: inline-block;">
-                                        Đang diễn ra
+                                    <span class="action-badge-info">
+                                        <i class="fas fa-futbol"></i> Đang đá
                                     </span>
                                 <?php else: ?>
                                     <?php if ($row['phuong_thuc'] === 'chuyen_khoan'): ?>
-                                        <button type="button" onclick="openRefundModal(<?php echo $row['dat_san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$gia_don; ?>)" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" title="Hủy sân và yêu cầu hoàn tiền">
-                                            Hủy &amp; Hoàn tiền
+                                        <button type="button" onclick="openRefundModal(<?php echo $row['dat_san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$gia_don; ?>)" class="action-btn action-refund" title="Hủy sân và nhận lại tiền">
+                                            <i class="fas fa-undo-alt"></i> Hủy & Hoàn tiền
                                         </button>
                                     <?php else: ?>
-                                        <button type="button" onclick="cancelUserBooking(<?php echo $row['dat_san_id']; ?>)" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" title="Hủy sân trước giờ đá">
-                                            Hủy sân
+                                        <button type="button" onclick="cancelUserBooking(<?php echo $row['dat_san_id']; ?>)" class="action-btn action-cancel" title="Hủy sân trước giờ đá">
+                                            <i class="fas fa-times"></i> Hủy
                                         </button>
                                     <?php endif; ?>
                                 <?php endif; ?>
@@ -160,22 +256,22 @@
                                     $needs_bank_info = (empty($rf_info['stk']) || $rf_info['stk'] === 'Chưa cung cấp');
                                 ?>
                                 <?php if ($needs_bank_info): ?>
-                                    <button type="button" onclick="openRefundModal(<?php echo $row['dat_san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$gia_don; ?>)" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;" title="Bổ sung STK ngân hàng để nhận tiền hoàn">
-                                        <i class="fas fa-university"></i> Nhập STK hoàn
+                                    <button type="button" onclick="openRefundModal(<?php echo $row['dat_san_id']; ?>, '<?php echo addslashes($row['ten_san']); ?>', <?php echo (int)$gia_don; ?>)" class="action-btn action-bank" title="Bổ sung STK ngân hàng để nhận tiền hoàn">
+                                        <i class="fas fa-university"></i> STK hoàn
                                     </button>
                                 <?php else: ?>
-                                    <span style="color: #6d28d9; font-size: 0.85rem; font-weight: 600;">
-                                        Chờ hoàn tiền
+                                    <span style="color: #6d28d9; font-size: 0.8rem; font-weight: 600;">
+                                        <i class="fas fa-clock"></i> Chờ hoàn
                                     </span>
                                 <?php endif; ?>
                             <?php elseif ($row['trang_thai'] == 'Đã hoàn tiền'): ?>
-                                <span style="color: #1d4ed8; font-size: 0.85rem; font-weight: 600;">
-                                    Đã hoàn tiền
+                                <span style="color: #1d4ed8; font-size: 0.8rem; font-weight: 600;">
+                                    <i class="fas fa-check-circle"></i> Đã hoàn
                                 </span>
-                            <?php elseif ($row['trang_thai'] == 'Đã hủy'): ?>
-                                <span style="color: #94a3b8; font-size: 0.85rem;">-</span>
+                            <?php elseif (in_array($row['trang_thai'], ['Đã hủy', 'Hủy'])): ?>
+                                <span style="color: #cbd5e1; font-weight: 600; font-size: 0.95rem;">—</span>
                             <?php else: ?>
-                                <span style="color: #64748b; font-size: 0.85rem;">-</span>
+                                <span style="color: #cbd5e1; font-weight: 600; font-size: 0.95rem;">—</span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -192,25 +288,32 @@
 </div> <!-- End history-container -->
 
     <?php if ($total_pages > 1): ?>
-    <div class="pagination" style="text-align: center; margin-bottom: 3rem;">
+    <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 6px; margin: 1.5rem 0 3rem 0;">
         <?php 
             $query_params = "controller=User&action=history";
             if (!empty($tu_ngay)) $query_params .= "&tu_ngay=" . urlencode($tu_ngay);
             if (!empty($den_ngay)) $query_params .= "&den_ngay=" . urlencode($den_ngay);
             if (!empty($current_tt)) $query_params .= "&trang_thai=" . urlencode($current_tt);
         ?>
+        <?php 
+            $pagination_range = function_exists('get_pagination_range') ? get_pagination_range($page, $total_pages, 1) : range(1, $total_pages);
+        ?>
         <?php if ($page > 1): ?>
-            <a href="index.php?<?php echo $query_params; ?>&page=<?php echo $page - 1; ?>" style="display: inline-block; padding: 0.5rem 1rem; border: 1px solid #cbd5e1; border-radius: 8px; margin: 0 4px; color: #475569; text-decoration: none; font-weight: 600; background: #ffffff;">Trước</a>
+            <a href="index.php?<?php echo $query_params; ?>&page=<?php echo $page - 1; ?>" title="Trang trước" style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.82rem; color: #475569; text-decoration: none; font-weight: 600; background: #ffffff; transition: all 0.2s;"><i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i></a>
         <?php endif; ?>
 
-        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-            <a href="index.php?<?php echo $query_params; ?>&page=<?php echo $i; ?>" style="display: inline-block; padding: 0.5rem 1rem; border: 1px solid <?php echo ($page == $i) ? 'var(--primary-color)' : '#cbd5e1'; ?>; border-radius: 8px; margin: 0 4px; color: <?php echo ($page == $i) ? '#ffffff' : '#475569'; ?>; text-decoration: none; font-weight: 600; background: <?php echo ($page == $i) ? 'var(--primary-color)' : '#ffffff'; ?>;">
-                <?php echo $i; ?>
-            </a>
-        <?php endfor; ?>
+        <?php foreach ($pagination_range as $p): ?>
+            <?php if ($p === '...'): ?>
+                <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 32px; color: #94a3b8; font-weight: 700; font-size: 0.85rem; user-select: none;">...</span>
+            <?php else: ?>
+                <a href="index.php?<?php echo $query_params; ?>&page=<?php echo $p; ?>" style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid <?php echo ($page == $p) ? '#0d9488' : '#e2e8f0'; ?>; border-radius: 8px; font-size: 0.88rem; color: <?php echo ($page == $p) ? '#ffffff' : '#334155'; ?>; text-decoration: none; font-weight: 600; background: <?php echo ($page == $p) ? '#0d9488' : '#ffffff'; ?>; box-shadow: <?php echo ($page == $p) ? '0 2px 4px rgba(13, 148, 136, 0.2)' : 'none'; ?>; transition: all 0.2s;">
+                    <?php echo $p; ?>
+                </a>
+            <?php endif; ?>
+        <?php endforeach; ?>
 
         <?php if ($page < $total_pages): ?>
-            <a href="index.php?<?php echo $query_params; ?>&page=<?php echo $page + 1; ?>" style="display: inline-block; padding: 0.5rem 1rem; border: 1px solid #cbd5e1; border-radius: 8px; margin: 0 4px; color: #475569; text-decoration: none; font-weight: 600; background: #ffffff;">Sau</a>
+            <a href="index.php?<?php echo $query_params; ?>&page=<?php echo $page + 1; ?>" title="Trang sau" style="display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 32px; padding: 0 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.82rem; color: #475569; text-decoration: none; font-weight: 600; background: #ffffff; transition: all 0.2s;"><i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i></a>
         <?php endif; ?>
     </div>
     <?php endif; ?>
@@ -319,6 +422,32 @@
     </div>
 </div>
 
-<script src="assets/js/history.js?v=1.0.1"></script>
+<!-- Modal Xem Đánh Giá Của Bạn (Read-Only) -->
+<div id="viewReviewModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 460px; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); position: relative; margin: 1rem;">
+        <button type="button" onclick="closeViewReviewModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">&times;</button>
+        
+        <h3 style="margin: 0 0 0.5rem 0; color: #0f172a; font-size: 1.25rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-star" style="color: #f59e0b;"></i> Đánh giá của bạn
+        </h3>
+        <p style="color: #64748b; font-size: 0.92rem; margin-bottom: 1.5rem;" id="viewModalPitchName">Sân bóng đá</p>
+
+        <div style="text-align: center; margin-bottom: 1.5rem; background: #f8fafc; padding: 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <div id="viewStarContainer" style="font-size: 2rem; color: #f59e0b; display: inline-flex; gap: 6px;"></div>
+            <div id="viewStarLabel" style="font-size: 0.95rem; font-weight: 700; color: #0f766e; margin-top: 6px;"></div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-weight: 600; color: #475569; font-size: 0.88rem; margin-bottom: 6px;">Cảm nhận của bạn:</label>
+            <div id="viewCommentBox" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; color: #1e293b; min-height: 70px; line-height: 1.5;"></div>
+        </div>
+
+        <div style="text-align: right;">
+            <button type="button" onclick="closeViewReviewModal()" class="action-btn" style="padding: 8px 20px; height: 36px; border-radius: 8px; background: #0d9488; color: white; border: none; font-size: 0.9rem; font-weight: 600; cursor: pointer;">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script src="assets/js/history.js?v=1.0.2"></script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>

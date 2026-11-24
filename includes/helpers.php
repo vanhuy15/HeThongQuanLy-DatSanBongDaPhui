@@ -47,3 +47,33 @@ if (!function_exists('syncCompletedMatchesReputation')) {
         }
     }
 }
+
+if (!function_exists('get_pagination_range')) {
+    /**
+     * Thuật toán phân trang cửa sổ trượt (Sliding Window Pagination)
+     * Tự động thu gọn dải trang dài bằng dấu '...' (ví dụ: 1, 2, ... 6 hoặc 1, 2, 3, ... 14)
+     */
+    function get_pagination_range(int $current_page, int $total_pages, int $delta = 1): array {
+        if ($total_pages <= 1) return [];
+        // Nếu số trang <= 4 thì hiển thị tất cả (1, 2, 3, 4)
+        if ($total_pages <= 4) {
+            return range(1, $total_pages);
+        }
+        $range = [];
+        $range[] = 1;
+        $left = max(2, $current_page - $delta);
+        $right = min($total_pages - 1, $current_page + $delta);
+
+        if ($left > 2) {
+            $range[] = '...';
+        }
+        for ($i = $left; $i <= $right; $i++) {
+            $range[] = $i;
+        }
+        if ($right < $total_pages - 1) {
+            $range[] = '...';
+        }
+        $range[] = $total_pages;
+        return $range;
+    }
+}

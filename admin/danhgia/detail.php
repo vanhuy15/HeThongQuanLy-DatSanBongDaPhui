@@ -218,14 +218,30 @@ include '../header_admin.php';
         </table>
     </div>
 
-    <?php if ($total_pages > 1): ?>
+    <?php if ($total_pages > 1): 
+        $pagination_range = function_exists('get_pagination_range') ? get_pagination_range($page, $total_pages, 1) : range(1, $total_pages);
+    ?>
         <div style="padding: 16px 20px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center;">
             <div class="pagi">
-                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                    <a href="?id=<?php echo $san_id; ?>&p=<?php echo $i; ?>" class="<?php echo $i == $page ? 'active' : ''; ?>">
-                        <?php echo $i; ?>
+                <?php if ($page > 1): ?>
+                    <a href="?id=<?php echo $san_id; ?>&p=<?php echo $page - 1; ?>" class="admin-page-btn" title="Trang trước">
+                        <i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i>
                     </a>
-                <?php endfor; ?>
+                <?php endif; ?>
+                <?php foreach ($pagination_range as $p): ?>
+                    <?php if ($p === '...'): ?>
+                        <span class="admin-page-ellipsis">...</span>
+                    <?php else: ?>
+                        <a href="?id=<?php echo $san_id; ?>&p=<?php echo $p; ?>" class="<?php echo $p == $page ? 'active' : ''; ?>">
+                            <?php echo $p; ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <?php if ($page < $total_pages): ?>
+                    <a href="?id=<?php echo $san_id; ?>&p=<?php echo $page + 1; ?>" class="admin-page-btn" title="Trang sau">
+                        <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     <?php endif; ?>

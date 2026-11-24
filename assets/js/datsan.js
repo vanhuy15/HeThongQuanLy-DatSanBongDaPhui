@@ -15,7 +15,7 @@ function switchBookingMode(mode) {
   loadSchedule();
 }
 
-function loadSchedule() {
+function loadSchedule(isSilent = false) {
   const sanIdEl = document.getElementById("san_id");
   const ngayDatEl = document.getElementById("ngay_dat");
   const container = document.getElementById("schedule-container");
@@ -25,24 +25,33 @@ function loadSchedule() {
   const san_id = sanIdEl.value;
   const ngay_dat = ngayDatEl.value;
 
-  container.innerHTML = `
-    <div class="loading-state">
-      <i class="fas fa-circle-notch fa-spin"></i>
-      <p>Đang cập nhật lịch sân...</p>
-    </div>
-  `;
+  if (!isSilent) {
+    container.innerHTML = `
+      <div class="loading-state">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <p>Đang cập nhật lịch sân...</p>
+      </div>
+    `;
+  }
 
   fetch(
     `index.php?controller=DatSan&action=getSchedule&san_id=${san_id}&ngay_dat=${ngay_dat}&mode=${currentBookingMode}`
   )
     .then((response) => response.text())
     .then((html) => {
+      // Nếu người dùng đang chọn 1 sân con thì không đè HTML để tránh mất lựa chọn
+      const userSelected = container.querySelector(".mini-pitch-svg.selected");
+      if (isSilent && userSelected) {
+        return;
+      }
       container.innerHTML = html;
       attachPitchEvents();
     })
     .catch((err) => {
-      console.error(err);
-      container.innerHTML = `<div class="error-box" style="padding: 20px; text-align: center; color: #dc2626;">Lỗi khi tải lịch sân. Vui lòng thử lại!</div>`;
+      if (!isSilent) {
+        console.error(err);
+        container.innerHTML = `<div class="error-box" style="padding: 20px; text-align: center; color: #dc2626;">Lỗi khi tải lịch sân. Vui lòng thử lại!</div>`;
+      }
     });
 }
 
@@ -157,6 +166,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (document.getElementById("schedule-container")) {
     loadSchedule();
+    // Tự động kiểm tra và cập nhật sơ đồ sân mỗi 8 giây (tự động nhả sân vàng thành sân xanh khi hết 10 phút)
+    setInterval(function () {
+      loadSchedule(true);
+    }, 8000);
   }
 });
 

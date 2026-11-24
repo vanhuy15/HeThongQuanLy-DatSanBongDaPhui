@@ -105,12 +105,13 @@ function showToast(message, type = 'success') {
         container.id = 'toastContainer';
         container.style.cssText = `
             position: fixed;
-            top: 25px;
-            right: 25px;
+            top: 24px;
+            right: 24px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            z-index: 99999;
+            z-index: 999999;
+            pointer-events: none;
         `;
         document.body.appendChild(container);
     }
@@ -118,33 +119,38 @@ function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     const isSuccess = type === 'success';
     toast.style.cssText = `
-        background: ${isSuccess ? 'linear-gradient(135deg, #0d9488, #0f766e)' : 'linear-gradient(135deg, #ef4444, #dc2626)'};
-        color: white;
-        padding: 14px 22px;
+        pointer-events: auto;
+        background: #ffffff;
+        color: #0f172a;
+        padding: 12px 18px;
         border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid ${isSuccess ? '#0d9488' : '#ef4444'};
         font-weight: 600;
-        font-size: 14px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        font-size: 0.85rem;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
         display: flex;
         align-items: center;
         gap: 10px;
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translateX(30px);
         transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     `;
-    toast.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}" style="font-size: 1.1rem;"></i> <span>${message}</span>`;
+    const icon = isSuccess ? 'fa-bell' : 'fa-exclamation-circle';
+    const iconColor = isSuccess ? '#0d9488' : '#ef4444';
+    toast.innerHTML = `<i class="fas ${icon}" style="color: ${iconColor}; font-size: 1rem;"></i> <span style="flex: 1;">${message}</span> <button type="button" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1.1rem;line-height:1;padding:0 0 0 8px;" onclick="this.parentElement.remove()">&times;</button>`;
     
     container.appendChild(toast);
     setTimeout(() => {
         toast.style.opacity = '1';
-        toast.style.transform = 'translateY(0)';
+        toast.style.transform = 'translateX(0)';
     }, 10);
 
     setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-20px)';
+        toast.style.transform = 'translateX(30px)';
         setTimeout(() => toast.remove(), 400);
-    }, 3500);
+    }, 4500);
 }
 
 function setupLichSuPage() {
@@ -271,7 +277,8 @@ function fetchNotificationData() {
                 // Audio & Toast notification on new unread item
                 if (lastUserUnreadCount !== null && data.unread_count > lastUserUnreadCount) {
                     playUserAudioChime();
-                    showToast('🔔 Bạn có ' + (data.unread_count - lastUserUnreadCount) + ' thông báo mới!', 'info');
+                    const diff = data.unread_count - lastUserUnreadCount;
+                    showToast('Bạn có ' + (diff > 1 ? diff + ' thông báo mới!' : '1 thông báo mới!'), 'success');
                 }
                 lastUserUnreadCount = data.unread_count;
 

@@ -4,7 +4,7 @@
 
 .search-bar-container {
     max-width: 860px;
-    margin: 2.5rem auto 1.5rem;
+    margin: 2rem auto 1.5rem;
     padding: 0 1rem;
     width: 100%;
 }
@@ -12,19 +12,25 @@
 .search-form {
     display: flex;
     width: 100%;
-    min-height: 54px;
+    min-height: 48px;
     background: #ffffff;
-    border-radius: 50px;
-    padding: 0.4rem 0.6rem 0.4rem 1.25rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border-radius: 9999px;
+    padding: 4px 6px 4px 18px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
     border: 1.5px solid #e2e8f0;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     align-items: center;
 }
 
 .search-form:focus-within {
-    box-shadow: 0 8px 25px rgba(13, 148, 136, 0.2);
-    border-color: var(--primary-color);
+    box-shadow: 0 4px 20px rgba(13, 148, 136, 0.15);
+    border-color: #0d9488;
+}
+
+.search-form .search-icon {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    flex-shrink: 0;
 }
 
 .search-form input {
@@ -32,14 +38,55 @@
     min-width: 0;
     border: none;
     background: transparent;
-    padding: 0.8rem 1rem;
-    font-size: 1.02rem;
+    padding: 8px 12px;
+    font-size: 0.92rem;
     outline: none;
-    color: var(--text-main);
+    color: #0f172a;
 }
 
 .search-form input::placeholder {
     color: #94a3b8;
-    font-size: 0.98rem;
+    font-size: 0.9rem;
+}
+
+#filterToggleBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+    font-size: 0.88rem;
+}
+
+#filterToggleBtn:hover {
+    background: #f0fdfa;
+    color: #0d9488;
+    border-color: #99f6e4;
+}
+
+#filterToggleBtn.filter-open {
+    background: #0d9488;
+    color: #ffffff;
+    border-color: #0d9488;
+}
+
+#filterActiveBadge {
+    display: none;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 1.5px solid white;
 }
 

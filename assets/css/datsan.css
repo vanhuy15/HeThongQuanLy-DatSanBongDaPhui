@@ -663,3 +663,292 @@
 .btn-action-outline:hover {
     background: #e2e8f0;
 }
+
+/* =======================================
+   PAYMENT PAGE - HORIZONTAL 2-COLUMN LAYOUT (UI/UX ZERO SCROLLING)
+======================================= */
+.thanhtoan-container.thanhtoan-horizontal {
+    max-width: 1060px;
+    margin: 2rem auto;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 2.25rem 2.5rem;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.07);
+    border: 1px solid #e2e8f0;
+    text-align: left;
+}
+.thanhtoan-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 1.25rem;
+}
+.thanhtoan-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #0f172a;
+    font-size: 1.65rem;
+    font-weight: 800;
+}
+.pitch-name-badge {
+    display: inline-block;
+    background: #f0fdfa;
+    color: #0f766e;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 5px 16px;
+    border-radius: 30px;
+    border: 1px solid #ccfbf1;
+}
+
+/* 2-Column Grid Layout */
+.thanhtoan-layout-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+}
+@media (max-width: 920px) {
+    .thanhtoan-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 1.75rem;
+    }
+    .thanhtoan-container.thanhtoan-horizontal {
+        padding: 1.5rem 1.25rem;
+        margin: 1rem auto;
+    }
+}
+
+/* Left Column Elements */
+.payment-left-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.payment-countdown {
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-radius: 12px;
+    padding: 12px 18px;
+    color: #92400e;
+    font-weight: 600;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 0;
+}
+.payment-countdown strong {
+    color: #dc2626;
+    font-size: 1.2rem;
+    font-weight: 800;
+    font-family: monospace;
+    letter-spacing: 1.5px;
+}
+.thongtin-datsan {
+    background: #f8fafc;
+    padding: 1.25rem 1.5rem;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    max-width: 100%;
+}
+.booking-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+.booking-info-row.price-row {
+    border-bottom: none;
+    padding-top: 10px;
+    margin-top: 4px;
+    border-top: 1.5px solid #e2e8f0;
+}
+.booking-info-row .info-label {
+    color: #64748b;
+    font-weight: 500;
+    font-size: 0.92rem;
+}
+.booking-info-row .info-value {
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 0.96rem;
+}
+.price-highlight {
+    color: #dc2626;
+    font-weight: 800;
+    font-size: 1.35rem;
+}
+.payment-selection-box {
+    margin-top: 0.25rem;
+}
+.payment-method-title {
+    margin: 0 0 0.85rem 0;
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: left;
+}
+.payment-methods {
+    display: flex;
+    gap: 0.85rem;
+    margin-bottom: 0;
+}
+.payment-card {
+    flex: 1;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.15rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: #ffffff;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+}
+.payment-guarantee-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: #64748b;
+    background: #f8fafc;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #f1f5f9;
+}
+
+/* Right Column: QR Container Horizontal */
+.qr-container-horizontal {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+.qr-frame-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.qr-frame {
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.qr-image {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    border-radius: 6px;
+    display: block;
+}
+.qr-pulse-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.84rem;
+    color: #0f766e;
+    background: #ccfbf1;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0d9488;
+    box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7);
+    animation: pulseRing 1.5s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+@keyframes pulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(13, 148, 136, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(13, 148, 136, 0);
+    }
+}
+.qr-detail-box {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-align: left;
+}
+.highlight-noidung {
+    background: #f0fdfa;
+    margin: 4px -6px -4px -6px;
+    padding: 8px 10px !important;
+    border-radius: 8px;
+    border-bottom: none !important;
+}
+
+/* Cash Guide Panel */
+.cash-guide-panel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 2.5rem 1.75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+.cash-icon-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #e0f2fe;
+    color: #0284c7;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cash-guide-panel h4 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #0f172a;
+    font-weight: 700;
+}
+.cash-guide-panel p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #475569;
+    line-height: 1.6;
+}
+.cash-warning-note {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: #92400e;
+    text-align: left;
+    line-height: 1.5;
+}
+

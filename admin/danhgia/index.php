@@ -168,14 +168,32 @@ $san_list = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
         </table>
     </div>
 
-    <?php if ($total_pages > 1) : ?>
-        <div style="padding: 16px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 6px;">
-            <?php for ($i = 1; $i <= $total_pages; $i++) : ?>
-                <a href="index.php?p=<?php echo $i; ?>" 
-                   style="padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid <?php echo ($i == $page) ? 'var(--primary)' : 'var(--border)'; ?>; background: <?php echo ($i == $page) ? 'var(--primary)' : '#ffffff'; ?>; color: <?php echo ($i == $page) ? '#ffffff' : 'var(--text-body)'; ?>;">
-                    <?php echo $i; ?>
-                </a>
-            <?php endfor; ?>
+    <?php if ($total_pages > 1) : 
+        $pagination_range = function_exists('get_pagination_range') ? get_pagination_range($page, $total_pages, 1) : range(1, $total_pages);
+    ?>
+        <div style="padding: 16px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; align-items: center; gap: 6px;">
+            <div class="admin-pagination-box" style="margin-top: 0;">
+                <?php if ($page > 1): ?>
+                    <a href="index.php?p=<?php echo $page - 1; ?>" class="admin-page-btn" title="Trang trước">
+                        <i class="fas fa-chevron-left" style="font-size: 0.75rem;"></i>
+                    </a>
+                <?php endif; ?>
+                <?php foreach ($pagination_range as $p): ?>
+                    <?php if ($p === '...'): ?>
+                        <span class="admin-page-ellipsis">...</span>
+                    <?php else: ?>
+                        <a href="index.php?p=<?php echo $p; ?>" 
+                           class="admin-page-btn <?php echo ($p == $page) ? 'active' : ''; ?>">
+                            <?php echo $p; ?>
+                        </a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                <?php if ($page < $total_pages): ?>
+                    <a href="index.php?p=<?php echo $page + 1; ?>" class="admin-page-btn" title="Trang sau">
+                        <i class="fas fa-chevron-right" style="font-size: 0.75rem;"></i>
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     <?php endif; ?>
 </div>
