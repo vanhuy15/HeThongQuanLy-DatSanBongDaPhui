@@ -29,6 +29,14 @@ if (foundApache) {
     try {
         if (process.platform === 'win32') {
             execSync(`powershell -Command "Start-Process '${foundApache}' -WindowStyle Hidden"`);
+            
+            // Tự động kết nối Ngrok cố định nếu có sẵn
+            const ngrokPath = require('path').join(__dirname, 'ngrok.exe');
+            if (fs.existsSync(ngrokPath)) {
+                execSync(`powershell -Command "Stop-Process -Name ngrok -Force -ErrorAction SilentlyContinue; Start-Process '${ngrokPath}' -ArgumentList 'http 80 --url https://mystified-usual-bottom.ngrok-free.dev' -WindowStyle Hidden"`);
+                console.log('[Tunnel] Đã tự động kích hoạt Ngrok cố định: https://mystified-usual-bottom.ngrok-free.dev');
+            }
+
             execSync('powershell -Command "Start-Process \'http://localhost/quanlysanbong/\'"');
         } else {
             spawn(foundApache, [], { detached: true, stdio: 'ignore' }).unref();
