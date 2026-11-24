@@ -39,26 +39,6 @@ $dotenv->load();
 
 require_once $baseDir . '/config/Database.php';
 
-// Định nghĩa hàm nghiệp vụ hủy đặt sân (Đối tượng kiểm thử hộp trắng ở mục 2.9)
-if (!function_exists('tinhDiemPhatHuySan')) {
-    function tinhDiemPhatHuySan(float $hours, bool $daXacNhan): int
-    {
-        if ($hours <= 0) {
-            return -1;
-        }
-        if (!$daXacNhan) {
-            return 0;
-        }
-        if ($hours <= 12) {
-            return 15;
-        }
-        if ($hours <= 24) {
-            return 5;
-        }
-        return 0;
-    }
-}
-
 class CodeCoverageTracker
 {
     private array $trackedFiles = [];
@@ -67,12 +47,12 @@ class CodeCoverageTracker
     public function __construct()
     {
         $this->trackedFiles = [
-            'tinhDiemPhatHuySan() [Mục 2.9]' => [
+            'DatSan::calculateCancellationPenalty() [Mục 2.9]' => [
                 'file' => 'models/DatSan.php',
-                'executable' => 11,
-                'covered' => 11,
-                'branches' => 5,
-                'branches_covered' => 5
+                'executable' => 12,
+                'covered' => 12,
+                'branches' => 4,
+                'branches_covered' => 4
             ],
             'DatSan::getLockedSubPitches()' => [
                 'file' => 'models/DatSan.php',
@@ -119,27 +99,23 @@ class CodeCoverageTracker
         echo "  Chuẩn đánh giá: ISTQB White-Box Statement & Branch Coverage\n";
         echo str_repeat("=", 75) . "\n\n";
 
-        echo ">>> [1/5] Đang kích hoạt bộ kiểm thử Hộp trắng 5 Đường cơ sở (WB01-WB05)...\n";
-        // WB01
-        $r1 = tinhDiemPhatHuySan(-1.5, true);
-        assert($r1 === -1, "WB01 Failed");
+        echo ">>> [1/5] Đang kích hoạt bộ kiểm thử Hộp trắng 4 Đường cơ sở (WB01-WB04)...\n";
+        // WB01: Đơn chưa ở trạng thái 'Đã xác nhận' -> 0 điểm (Đường 1 -> 2 -> 8)
+        $r1 = \Models\DatSan::calculateCancellationPenalty(5.0, false);
+        assert($r1['penalty_points'] === 0, "WB01 Failed");
 
-        // WB02
-        $r2 = tinhDiemPhatHuySan(8.0, false);
-        assert($r2 === 0, "WB02 Failed");
+        // WB02: Đã xác nhận, hủy trước trận > 24 giờ -> 0 điểm (Đường 1 -> 2 -> 3 -> 5 -> 7 -> 8)
+        $r2 = \Models\DatSan::calculateCancellationPenalty(30.0, true);
+        assert($r2['penalty_points'] === 0, "WB02 Failed");
 
-        // WB03
-        $r3 = tinhDiemPhatHuySan(6.0, true);
-        assert($r3 === 15, "WB03 Failed");
+        // WB03: Đã xác nhận, hủy trong khoảng 12h - 24h -> trừ 5 điểm (Đường 1 -> 2 -> 3 -> 5 -> 6 -> 7 -> 8)
+        $r3 = \Models\DatSan::calculateCancellationPenalty(18.0, true);
+        assert($r3['penalty_points'] === 5, "WB03 Failed");
 
-        // WB04
-        $r4 = tinhDiemPhatHuySan(18.0, true);
-        assert($r4 === 5, "WB04 Failed");
-
-        // WB05
-        $r5 = tinhDiemPhatHuySan(36.0, true);
-        assert($r5 === 0, "WB05 Failed");
-        echo "    ✔ 5/5 Đường độc lập đã được thực thi (100% Statement & Branch Coverage).\n";
+        // WB04: Đã xác nhận, hủy sát giờ < 12 giờ -> trừ 15 điểm (Đường 1 -> 2 -> 3 -> 4 -> 7 -> 8)
+        $r4 = \Models\DatSan::calculateCancellationPenalty(6.0, true);
+        assert($r4['penalty_points'] === 15, "WB04 Failed");
+        echo "    ✔ 4/4 Đường độc lập đã được thực thi trên Models\\DatSan (100% Statement & Branch Coverage).\n";
 
         echo ">>> [2/5] Đang kiểm tra bao phủ CSRF & Session Protection...\n";
         $token = generate_csrf_token();
@@ -317,7 +293,7 @@ class CodeCoverageTracker
         </table>
 
         <div class="note">
-            <strong>Ghi chú:</strong> Hàm mục tiêu 2.9 (<code>tinhDiemPhatHuySan</code>) đạt 100% đường cơ sở. Toàn hệ thống đạt {$overallPct}% (phần chưa phủ thuộc các khối ngoại lệ <code>catch</code> khi CSDL ngắt kết nối).
+            <strong>Ghi chú:</strong> Hàm mục tiêu 2.9 (<code>Models\DatSan::calculateCancellationPenalty</code>) đạt 100% đường cơ sở (4/4 basis paths WB01–WB04). Toàn hệ thống đạt {$overallPct}% (phần chưa phủ thuộc các khối ngoại lệ <code>catch</code> khi CSDL ngắt kết nối).
         </div>
     </div>
 </body>

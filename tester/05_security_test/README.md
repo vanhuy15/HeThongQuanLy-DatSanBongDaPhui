@@ -4,7 +4,7 @@ Hệ thống kiểm thử an ninh mạng toàn diện cho ứng dụng Quản l�
 
 ---
 
-## 📊 1. Bảng Tổng Hợp 7 Kịch Bản Kiểm Thử An Toàn (Security Test Scenarios)
+## 📊 1. Bảng Tổng Hợp 9 Kịch Bản Kiểm Thử An Toàn (Security Test Scenarios)
 
 | Mã | Hạng mục an ninh (OWASP) | Cơ chế phòng thủ trong mã nguồn | Trạng thái |
 | :--- | :--- | :--- | :---: |
@@ -15,6 +15,8 @@ Hệ thống kiểm thử an ninh mạng toàn diện cho ứng dụng Quản l�
 | **SEC-05** | **Security Headers (Clickjacking)** | `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, `Referrer-Policy` | ✅ **PASSED** |
 | **SEC-06** | **An toàn Phiên làm việc (Session)** | Cookie `PHPSESSID` thiết lập cờ `HttpOnly = true` và `SameSite = Lax` chống đánh cắp | ✅ **PASSED** |
 | **SEC-07** | **Che giấu thông tin (Info Disclosure)** | Đã gỡ bỏ header `X-Powered-By` và kiểm soát hiển thị lỗi PHP trên môi trường Production | ✅ **PASSED** |
+| **SEC-08** | **Tham chiếu Đối tượng Trực tiếp (IDOR)** | Ràng buộc quyền sở hữu đơn đặt sân qua `nguoi_dung_id` từ Session đăng nhập | ✅ **PASSED** |
+| **SEC-09** | **Tải lên Tập tin Độc hại (File Upload)** | Whitelist định dạng MIME (JPG, PNG, WEBP), giới hạn kích thước 5MB và đổi tên file | ✅ **PASSED** |
 
 ---
 
@@ -23,9 +25,13 @@ Hệ thống kiểm thử an ninh mạng toàn diện cho ứng dụng Quản l�
 ### Cách 1: Chạy công cụ kiểm thử tự động (Automated Security Runner)
 Chạy script kiểm tra trực tiếp qua CLI:
 ```bash
+npm run test:security
+```
+hoặc:
+```bash
 d:\xampp\php\php.exe tester/05_security_test/security_audit_runner.php
 ```
-Kết quả hiển thị trạng thái của cả 7 lỗ hổng với thời gian phản hồi dưới 1 giây.
+Kết quả hiển thị trạng thái của cả 9 kịch bản an ninh với thời gian phản hồi dưới 1 giây (100% Passed).
 
 ### Cách 2: Quét DAST bằng phần mềm OWASP ZAP
 1. Khởi động Apache và MySQL trên XAMPP.

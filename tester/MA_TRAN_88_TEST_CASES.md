@@ -147,7 +147,7 @@ $$\text{Tổng số ca kiểm thử} = 18\text{ (EP)} + 18\text{ (BV)} + 10\text
 - `TC-WB01`: Đường cơ sở 1: Đường $1 \rightarrow 2 \rightarrow 8$ (Bao phủ nhánh đơn chưa duyệt, không phạt) ➔ **PASS**
 - `TC-WB02`: Đường cơ sở 2: Đường $1 \rightarrow 2 \rightarrow 3 \rightarrow 5 \rightarrow 7 \rightarrow 8$ (Bao phủ nhánh đơn đã duyệt hủy sớm $> 24h$, không phạt) ➔ **PASS**
 - `TC-WB03`: Đường cơ sở 3: Đường $1 \rightarrow 2 \rightarrow 3 \rightarrow 5 \rightarrow 6 \rightarrow 7 \rightarrow 8$ (Bao phủ nhánh đơn đã duyệt hủy trong $12h - 24h$, phạt 5 điểm) ➔ **PASS**
-- `TC-WB04`: Đường cơ sở 4: Đường $1 \rightarrow 2 \rightarrow 3 \rightarrow 4 \rightarrow 7 \rightarrow 8$ (Bao phủ nhánh đơn đã duyệt hủy sát giờ $\le 12h$, phạt 15 điểm) ➔ **PASS**
+- `TC-WB04`: Đường cơ sở 4: Đường $1 \rightarrow 2 \rightarrow 3 \rightarrow 4 \rightarrow 7 \rightarrow 8$ (Bao phủ nhánh đơn đã duyệt hủy sát giờ $< 12h$, phạt 15 điểm) ➔ **PASS**
 
 ### 9. Nhóm CL: Checklist & Security (4 Ca: `TC-CL01` – `TC-CL04`)
 - `TC-CL01`: Checklist kiểm tra khoảng đệm 5 phút chuẩn bị sân (Lead Time Buffer): Khung giờ sát đá bị khóa ➔ **PASS**
@@ -157,12 +157,12 @@ $$\text{Tổng số ca kiểm thử} = 18\text{ (EP)} + 18\text{ (BV)} + 10\text
 
 ### 10. Nhóm PW: Pairwise Testing (8 Ca: `TC-PW01` – `TC-PW08`)
 - `TC-PW01`: Cặp tham số: Sân 5 + Giờ thường (ngày trong tuần) ➔ Tính đúng đơn giá cơ bản ➔ **PASS**
-- `TC-PW02`: Cặp tham số: Sân 5 + Giờ vàng buổi tối (ngày trong tuần) ➔ Tính đúng giá giờ cao điểm ➔ **PASS**
-- `TC-PW03`: Cặp tham số: Sân 5 + Ngày cuối tuần (thứ 7, CN) ➔ Tính đúng tỷ lệ phụ thu cuối tuần ➔ **PASS**
-- `TC-PW04`: Cặp tham số: Sân 5 + Giờ vàng cuối tuần ➔ Kết hợp cả giá cao điểm và phụ thu ➔ **PASS**
+- `TC-PW02`: Cặp tham số: Sân 5 + Giờ vàng buổi tối ➔ Tính đúng giá giờ cao điểm theo cấu hình ➔ **PASS**
+- `TC-PW03`: Cặp tham số: Sân 5 + Khung giờ thường ➔ Hiển thị đúng đơn giá cơ sở cấu hình (250.000đ) ➔ **PASS**
+- `TC-PW04`: Cặp tham số: Sân 5 + Khung giờ cao điểm (giờ vàng) ➔ Áp dụng đúng giá cao điểm theo cấu hình (350.000đ) ➔ **PASS**
 - `TC-PW05`: Cặp tham số: Sân 7 ghép + Giờ thường ➔ Áp dụng đơn giá sân 7 hoặc nhân hệ số ghép ➔ **PASS**
 - `TC-PW06`: Cặp tham số: Sân 7 ghép + Giờ vàng buổi tối ➔ Tính đúng giá cao điểm cho sân 7 ➔ **PASS**
-- `TC-PW07`: Cặp tham số: Sân 7 ghép + Ngày cuối tuần ➔ Tính đúng phụ thu cuối tuần cho sân 7 ➔ **PASS**
+- `TC-PW07`: Cặp tham số: Sân 7 ghép + Khung giờ cao điểm ➔ Áp dụng đúng giá cao điểm sân 7 theo cấu hình (540.000đ) ➔ **PASS**
 - `TC-PW08`: Cặp tham số: Sân 7 ghép + Fallback multiplier (1.6x) khi chưa cấu hình giá sân 7 riêng ➔ **PASS**
 
 ---

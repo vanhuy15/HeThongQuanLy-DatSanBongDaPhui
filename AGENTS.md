@@ -45,7 +45,7 @@ Tài liệu quy chuẩn kiến trúc, luồng nghiệp vụ và an toàn kỹ th
 4. **Chính Sách Điểm Uy Tín (Reputation System):**
    - Thang điểm chuẩn: 0 đến 100 điểm. Mặc định khách mới: 100đ.
    - Bùng sân không đến đá: Trừ 25 điểm (`bung_san`), tăng `so_lan_bung_san`.
-   - Hủy sát giờ (< 4h): Trừ 15 điểm; Hủy sớm (< 12h): Trừ 5 điểm.
+   - Hủy sát giờ (< 12h): Trừ 15 điểm; Hủy sát ngày (12h - 24h): Trừ 5 điểm; Hủy sớm (> 24h): Không trừ điểm (0đ).
    - Hoàn thành trận đấu đúng giờ: Tự động cộng +5 điểm.
    - Gửi đánh giá / nhận xét 1-5 sao: Cộng +2 điểm.
    - Chế tài: Dưới 60 điểm khóa phương thức Tiền mặt; Dưới 40 điểm khóa quyền đặt sân.
@@ -55,7 +55,7 @@ Tài liệu quy chuẩn kiến trúc, luồng nghiệp vụ và an toàn kỹ th
 ## 🧪 3. Quy Trình Kiểm Thử & CI/CD
 
 Trước khi commit bất kỳ tính năng nào, phải chạy và đảm bảo vượt qua 100% test suite:
-- Kiểm thử đơn vị: `npm run test:unit` (PHPUnit 10.5, 49 tests passed)
+- Kiểm thử đơn vị: `npm run test:unit` (PHPUnit 10.5, 88 tests passed, 232 assertions)
 - Kiểm thử bảo mật: `npm run test:security` (OWASP Automated Security Runner, 9/9 passed)
 - Kiểm thử API: `npm run test:api` (Newman / Postman)
 - Kiểm thử giao diện: `npm run test:e2e` (Playwright)

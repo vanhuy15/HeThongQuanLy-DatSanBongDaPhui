@@ -45,7 +45,7 @@ Kiểm thử viên sử dụng tài khoản vãng lai chưa đăng nhập và t�
 
 Quản trị viên thực hiện thêm mới, chỉnh sửa thông tin và xóa sân bóng, kiểm tra ràng buộc ngăn chặn xóa các sân đang có lịch đặt chưa hoàn thành. Đồng thời cấu hình quy tắc ghép sân 7 từ 2 sân con tương ứng, đảm bảo dữ liệu được lưu chính xác và áp dụng tức thì lên thuật toán khóa chéo ở giao diện đặt sân của khách.
 
-Kiểm thử viên quản lý danh mục khung giờ hoạt động, thiết lập mức giá riêng cho các khung giờ vàng và cấu hình tỷ lệ phụ thu vào ngày cuối tuần, cũng như giá thuê riêng cho sân 7 ghép. Sau đó đối chiếu lại giá hiển thị trên giao diện đặt sân ở cả ngày thường và cuối tuần để đảm bảo hệ thống tính toán chính xác tổng tiền thuê sân.
+Kiểm thử viên quản lý danh mục khung giờ hoạt động, thiết lập mức giá riêng cho các khung giờ vàng cao điểm, cũng như giá thuê riêng cho sân 7 ghép và hệ số nhân. Sau đó đối chiếu lại giá hiển thị trên giao diện đặt sân ở các khung giờ khác nhau để đảm bảo hệ thống tính toán chính xác tổng tiền thuê sân.
 
 Trên bảng quản trị đặt sân đã được tối ưu giao diện tinh gọn, quản trị viên thực hiện duyệt đơn hợp lệ, từ chối đơn vi phạm để giải phóng lịch, xác nhận đã thu tiền mặt khi khách đến sân, và bấm báo bùng sân để kích hoạt trừ điểm phạt. Với các đơn yêu cầu hoàn tiền, hệ thống hiển thị mã VietQR chứa sẵn STK của khách để quản trị viên quét chuyển hoàn tiền nhanh chóng một chạm.
 

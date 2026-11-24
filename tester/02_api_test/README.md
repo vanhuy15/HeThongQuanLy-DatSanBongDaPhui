@@ -4,13 +4,13 @@ Bộ kiểm thử API bao phủ **100% các endpoint** của cả 2 phân hệ *
 
 ---
 
-## 📂 1. Cấu Trúc Các Nhóm API Kiểm Thử (23 Test Cases)
+## 📂 1. Cấu Trúc Các Nhóm API Kiểm Thử (25 Test Cases)
 
 1. **`01 - Authentication & Security`**:
+   - `TC00`: Khởi tạo phiên & Trích xuất CSRF Token.
+   - `TC00_B`: Chặn truy cập đặt sân khi chưa đăng nhập.
    - `TC01`: Đăng nhập Khách hàng thành công (Cấp phát Cookie `PHPSESSID`).
    - `TC02`: Chặn đăng nhập sai mật khẩu (Báo lỗi HTTP / HTML Alert).
-   - `TC03`: Đăng nhập Quản trị viên `admin15 / 123456`.
-   - `TC04`: Chặn đăng ký trùng username / email.
    - `TC05`: Chặn yêu cầu POST khi thiếu CSRF Token hợp lệ.
 
 2. **`02 - Discovery & Pitch Search`**:
@@ -21,12 +21,13 @@ Bộ kiểm thử API bao phủ **100% các endpoint** của cả 2 phân hệ *
 
 3. **`03 - Booking & Slot Availability`**:
    - `TC10`: Lấy dữ liệu ma trận khung giờ & bảng giá AJAX (`DatSan/getSchedule`).
-   - `TC11`: Chặn người dùng chưa đăng nhập truy cập trang đặt sân.
-   - `TC12`: Kiểm tra trạng thái khả dụng của sân con (`DatSan/checkAvailability`).
+   - `TC12`: Kiểm tra chi tiết trạng thái Slot sân con (`DatSan/getSchedule`).
+   - `TC12_B`: Đặt sân trực tuyến tạo đơn giữ chỗ (`DatSan/bookSubmit`).
 
 4. **`04 - Checkout & Payment`**:
    - `TC13`: Xem trang thanh toán kèm bộ đếm giữ chỗ 10 phút.
    - `TC14`: Xác nhận phương thức chuyển khoản VietQR tự động.
+   - `TC14_B`: Kiểm tra an toàn khi truyền dat_san_id âm hoặc không hợp lệ (-1).
 
 5. **`05 - Customer Portal`**:
    - `TC15`: Truy xuất lịch sử đặt sân phân trang & bộ lọc ngày.
@@ -35,6 +36,7 @@ Bộ kiểm thử API bao phủ **100% các endpoint** của cả 2 phân hệ *
    - `TC18`: Đánh giá 5 sao sân bóng (+2 điểm uy tín).
 
 6. **`06 - Admin Management`**:
+   - `TC18_B`: Đăng nhập tài khoản Quản trị viên (`admin15`).
    - `TC19`: Xem KPI doanh thu & biểu đồ thống kê Dashboard.
    - `TC20`: Quản lý đặt sân: Lọc đơn theo trạng thái (Chờ xác nhận, Đã xác nhận...).
    - `TC21`: Danh sách sân bóng & cấu hình ghép sân 5 & 7.

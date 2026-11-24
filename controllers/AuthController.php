@@ -143,9 +143,9 @@ class AuthController extends Controller {
                 return;
             }
 
-            // Kiểm tra Số điện thoại (10 chữ số)
-            if (!preg_match('/^[0-9]{10}$/', $sdt)) {
-                $this->render('auth/register', ['error' => "Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 chữ số."]);
+            // Kiểm tra Số điện thoại (chuẩn 10 chữ số nhà mạng Việt Nam)
+            if (!preg_match('/^(0[3|5|7|8|9])+([0-9]{8})$/', $sdt)) {
+                $this->render('auth/register', ['error' => "Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 chữ số (đầu số 03, 05, 07, 08, 09)."]);
                 return;
             }
 

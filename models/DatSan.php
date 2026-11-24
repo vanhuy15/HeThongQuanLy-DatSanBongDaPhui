@@ -20,8 +20,7 @@ class DatSan
      */
     public static function cleanupExpiredBookings()
     {
-        self::autoCancelExpiredHolds(10);
-        Database::cleanupExpiredBookings();
+        \Services\BookingCleanupService::runCleanup(Database::getConnection());
     }
 
     /**

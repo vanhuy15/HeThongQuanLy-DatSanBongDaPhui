@@ -28,14 +28,30 @@ class Database {
             } catch (\mysqli_sql_exception $e) {
                 // Fallback kết nối 127.0.0.1 nếu gặp lỗi socket
                 if ($host !== '127.0.0.1') {
-                    self::$conn = new \mysqli('127.0.0.1', $user, $pass, $name, $port);
+                    try {
+                        self::$conn = new \mysqli('127.0.0.1', $user, $pass, $name, $port);
+                    } catch (\mysqli_sql_exception $fallbackEx) {
+                        if (class_exists('\\Core\\Logger')) {
+                            \Core\Logger::error("Kết nối CSDL 127.0.0.1 fallback thất bại: " . $fallbackEx->getMessage());
+                        }
+                        http_response_code(500);
+                        die("Hệ thống đang bảo trì kết nối cơ sở dữ liệu. Vui lòng thử lại sau ít phút.");
+                    }
                 } else {
-                    throw $e;
+                    if (class_exists('\\Core\\Logger')) {
+                        \Core\Logger::error("Kết nối CSDL thất bại: " . $e->getMessage());
+                    }
+                    http_response_code(500);
+                    die("Hệ thống đang bảo trì kết nối cơ sở dữ liệu. Vui lòng thử lại sau ít phút.");
                 }
             }
 
             if (self::$conn->connect_error) {
-                die("Kết nối thất bại: " . self::$conn->connect_error);
+                if (class_exists('\\Core\\Logger')) {
+                    \Core\Logger::error("Kết nối CSDL thất bại: " . self::$conn->connect_error);
+                }
+                http_response_code(500);
+                die("Hệ thống đang bảo trì kết nối cơ sở dữ liệu. Vui lòng thử lại sau ít phút.");
             }
             self::$conn->set_charset("utf8mb4");
             date_default_timezone_set('Asia/Ho_Chi_Minh');

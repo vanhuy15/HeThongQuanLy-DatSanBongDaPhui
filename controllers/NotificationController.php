@@ -76,7 +76,7 @@ class NotificationController extends Controller {
         }
 
         $pending_confirm = \Models\DatSan::countPending(); // Đơn 'Chờ xác nhận' (tiền mặt / chuyển khoản)
-        $conn = \Core\Database::getConnection();
+        $conn = \Config\Database::getConnection();
         $res_rf = $conn->query("SELECT COUNT(*) FROM dat_san WHERE trang_thai = 'Chờ hoàn tiền' AND deleted_at IS NULL");
         $pending_refund = (int)($res_rf->fetch_row()[0] ?? 0);
         $total_count = $pending_confirm + $pending_refund;
