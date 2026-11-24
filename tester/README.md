@@ -60,6 +60,7 @@ Kiểm thử viên lọc số liệu doanh thu theo ngày, tuần, tháng (từ 
 ```text
 tester/
 ├── README.md                                  # Hướng dẫn tổng hợp & quy trình thực thi
+├── MA_TRAN_88_TEST_CASES.md                   # 📊 Bảng ma trận truy vết 88 ca kiểm thử FR01-FR14
 ├── 01_unit_test/                              # 🟢 TOOL 1: PHPUnit (88 Tests - 232 Assertions - 100% Pass)
 │   ├── BoundaryAndSecurityTest.php            # 10 Tests: Giá trị biên BVA, BCRYPT, đăng nhập phân biệt hoa/thường BINARY
 │   ├── CancellationPenaltyCalculationTest.php # 8 Tests: Thuật toán phạt điểm uy tín, hoàn tiền, format thông báo phạt
