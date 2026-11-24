@@ -51,6 +51,7 @@ php_errors.log
 scripts/*.exe
 scripts/cloudflared.exe
 scripts/start_tunnel.bat
+scripts/start_ngrok.bat
 
 # =========================
 # 📊 EXPORTS TẠM THỜI
