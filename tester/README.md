@@ -51,16 +51,16 @@ Trên bảng quản trị đặt sân đã được tối ưu giao diện tinh g
 
 Kiểm thử viên tra cứu thông tin khách hàng, xem chi tiết nhật ký biến động điểm uy tín để đảm bảo mọi lần cộng trừ điểm đều được ghi nhận minh bạch. Quản trị viên thực hiện điều chỉnh điểm thủ công kèm lý do xử lý, đồng thời kiểm tra tính năng khóa và mở khóa tài khoản để xác nhận tài khoản bị khóa lập tức mất quyền đăng nhập và đặt sân.
 
-Kiểm thử viên lọc số liệu doanh thu theo ngày, tuần, tháng (từ mốc 2025-01-01 trở đi) để kiểm tra độ chính xác của tổng doanh thu, số lượt đặt và tỷ lệ lấp đầy. Hệ thống chỉ ghi nhận doanh thu từ các đơn đã thanh toán hoặc hoàn thành, loại trừ đơn hủy/giữ chỗ, phân tách rõ tiền mặt và VietQR, đồng thời hỗ trợ xuất báo cáo doanh thu ra file Excel (.csv chuẩn UTF-8 BOM kèm hộp thoại xác nhận).
+Kiểm thử viên lọc số liệu doanh thu theo ngày, tuần, tháng (từ mốc 2025-01-01 trở đi) để kiểm tra độ chính xác của tổng doanh thu, số lượt đặt và tỷ lệ lấp đầy. Hệ thống chỉ ghi nhận doanh thu từ các đơn đã thanh toán hoặc hoàn thành, loại trừ đơn hủy/giữ chỗ, phân tách rõ tiền mặt và VietQR, đồng thời hỗ trợ xuất báo cáo doanh thu ra file Excel (`.xls` chuẩn UTF-8 BOM kèm hộp thoại xác nhận).
 
 ---
 
-## 🏗️ Tổng Quan 5 Công Cụ Kiểm Thử Trong Thư Mục `tester/`
+## 🏗️ Tổng Quan 6 Công Cụ Kiểm Thử Trong Thư Mục `tester/`
 
 ```text
 tester/
 ├── README.md                                  # Hướng dẫn tổng hợp & quy trình thực thi
-├── MA_TRAN_88_TEST_CASES.md                   # 📊 Bảng ma trận truy vết 88 ca kiểm thử FR01-FR14
+├── MA_TRAN_98_TEST_CASES.md                   # 📊 Bảng ma trận truy vết 98 ca kiểm thử thiết kế FR01-FR14
 ├── 01_unit_test/                              # 🟢 TOOL 1: PHPUnit (88 Tests - 232 Assertions - 100% Pass)
 │   ├── BoundaryAndSecurityTest.php            # 10 Tests: Giá trị biên BVA, BCRYPT, đăng nhập phân biệt hoa/thường BINARY
 │   ├── CancellationPenaltyCalculationTest.php # 8 Tests: Thuật toán phạt điểm uy tín, hoàn tiền, format thông báo phạt
@@ -92,6 +92,9 @@ tester/
     ├── security_audit_runner.php              # Script PHP kiểm thử tự động 9/9 lỗ hổng an ninh mạng (OWASP Top 10)
     ├── quanlysanbong.context                  # File cấu hình Context nhập sẵn cho phần mềm OWASP ZAP GUI
     └── README.md                              # Báo cáo phân tích DAST, CVE và hướng dẫn quét bảo mật
+└── 06_code_coverage/                          # 🟡 TOOL 6: Code Coverage Runner (ISTQB Statement & Branch Coverage)
+    ├── coverage_runner.php                    # Đo độ bao phủ dòng lệnh & nhánh rẽ (4 đường WB01-WB04 đạt 100%)
+    └── report/index.html                      # Báo cáo HTML trực quan tỷ lệ bao phủ mã nguồn (92.9% tổng hệ thống)
 ```
 
 ---
@@ -108,6 +111,7 @@ Toàn bộ các công cụ đã được tích hợp thành lệnh npm một ch�
 | `npm run test:e2e:headed` | **Playwright** (Giao diện trực quan Chromium) | 12 kịch bản luồng | ✅ **100% Passed** |
 | `npm run test:report` | **Playwright Report** (Xem báo cáo HTML & Trace) | - | 📊 **Mở trình duyệt báo cáo** |
 | `npm run test:security` | **Automated Auditor** (9 Chốt bảo mật OWASP) | 9 chốt an toàn | ✅ **9/9 Passed (100% An toàn)** |
+| `npm run test:coverage` | **Code Coverage Runner** (Độ bao phủ nhánh/lệnh) | 6 mô-đun cốt lõi (4/4 WB) | 📊 **92.9% Tổng / 100% Mục 2.9** |
 | `npm run test:all` | **Chạy liên hoàn cả 4 bộ test tự động** | Toàn bộ hệ thống | ✅ **Bảo đảm 100% Pass** |
 
 ---

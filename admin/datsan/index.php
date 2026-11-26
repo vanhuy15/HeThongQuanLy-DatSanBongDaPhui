@@ -163,15 +163,21 @@ $result = $stmt->get_result();
 
     <!-- BULK ACTIONS FLOATING BAR -->
     <div id="bulkActionBar" style="display: none; background: #ffffff; color: #1e293b; padding: 12px 22px; border-radius: 12px; margin: 12px 16px; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08); animation: fadeIn 0.2s ease;">
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <span style="font-weight: 600; font-size: 0.92rem; color: #334155;">Đã chọn: <strong id="bulkSelectedCount" style="color: #0f766e; background: #ccfbf1; padding: 3px 12px; border-radius: 20px; font-size: 0.95rem; font-weight: 700; margin-left: 2px;">0</strong> đơn</span>
+            <span id="bulkNoActionHint" style="display: none; font-size: 0.84rem; color: #b45309; background: #fef3c7; padding: 4px 10px; border-radius: 6px; font-weight: 500;">
+                <i class="fas fa-info-circle"></i> Đơn Chờ hoàn tiền cần quét QR hoàn tiền từng đơn riêng lẻ.
+            </span>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button type="button" onclick="submitBulkAction('xacnhan_all')" style="background: #0d9488; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);">
-                Duyệt tất cả đơn đã chọn
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" id="btnBulkApprove" onclick="submitBulkAction('xacnhan_all')" style="display: none; background: #0d9488; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(13, 148, 136, 0.25);">
+                Duyệt (0 đơn chờ)
             </button>
-            <button type="button" onclick="submitBulkAction('huy_all')" style="background: #e11d48; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);">
-                Hủy các đơn đã chọn
+            <button type="button" id="btnBulkCancel" onclick="submitBulkAction('huy_all')" style="display: none; background: #e11d48; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);">
+                Hủy / Chuyển hoàn (0 đơn)
+            </button>
+            <button type="button" id="btnBulkDelete" onclick="submitBulkAction('xoa_all')" style="display: none; background: #475569; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 6px rgba(71, 85, 105, 0.25);">
+                <i class="fas fa-trash-alt"></i> Xóa đơn cũ (0)
             </button>
         </div>
     </div>
@@ -213,7 +219,11 @@ $result = $stmt->get_result();
                     <tr>
                         <!-- Checkbox chọn đơn -->
                         <td style="text-align: center; vertical-align: middle;">
-                            <input type="checkbox" name="booking_ids[]" value="<?php echo $row['dat_san_id']; ?>" class="booking-item-check" onchange="updateBulkActionUI()">
+                            <input type="checkbox" name="booking_ids[]"
+                                   value="<?php echo $row['dat_san_id']; ?>"
+                                   data-status="<?php echo htmlspecialchars($row['trang_thai']); ?>"
+                                   data-payment="<?php echo htmlspecialchars($row['phuong_thuc'] ?? 'tien_mat'); ?>"
+                                   class="booking-item-check" onchange="updateBulkActionUI()">
                         </td>
 
                         <!-- Mã Đơn -->
@@ -472,18 +482,80 @@ function toggleSelectAllBookings(master) {
     updateBulkActionUI();
 }
 
+function getBulkStats(checks) {
+    let pendingCount = 0;
+    let cancellableCount = 0;
+    let vietqrRefundCount = 0;
+    let deletableCount = 0;
+
+    checks.forEach(c => {
+        const st = c.getAttribute('data-status') || '';
+        const pm = c.getAttribute('data-payment') || 'tien_mat';
+
+        if (st === 'Chờ xác nhận') pendingCount++;
+        if (['Chờ thanh toán', 'Chờ xác nhận', 'Đã xác nhận'].includes(st)) {
+            cancellableCount++;
+            if (pm === 'chuyen_khoan' && ['Chờ xác nhận', 'Đã xác nhận'].includes(st)) {
+                vietqrRefundCount++;
+            }
+        }
+        if (['Đã hủy', 'Đã hoàn tiền', 'Đã từ chối'].includes(st)) {
+            deletableCount++;
+        }
+    });
+
+    return { pendingCount, cancellableCount, vietqrRefundCount, deletableCount, total: checks.length };
+}
+
 function updateBulkActionUI() {
     const checks = document.querySelectorAll('.booking-item-check:checked');
     const bar = document.getElementById('bulkActionBar');
     const countSpan = document.getElementById('bulkSelectedCount');
-    if (checks.length > 0) {
-        bar.style.display = 'flex';
-        countSpan.textContent = checks.length;
-    } else {
+    const btnApprove = document.getElementById('btnBulkApprove');
+    const btnCancel = document.getElementById('btnBulkCancel');
+    const btnDelete = document.getElementById('btnBulkDelete');
+    const hintSpan = document.getElementById('bulkNoActionHint');
+
+    if (checks.length === 0) {
         bar.style.display = 'none';
         const master = document.getElementById('selectAllBookings');
         if (master) master.checked = false;
+        return;
     }
+
+    const stats = getBulkStats(checks);
+    bar.style.display = 'flex';
+    countSpan.textContent = stats.total;
+
+    // 1. Nút Duyệt: Chỉ hiện khi có ít nhất 1 đơn 'Chờ xác nhận'
+    if (stats.pendingCount > 0) {
+        btnApprove.style.display = 'inline-block';
+        btnApprove.textContent = 'Duyệt (' + stats.pendingCount + ' đơn chờ)';
+    } else {
+        btnApprove.style.display = 'none';
+    }
+
+    // 2. Nút Hủy / Chuyển hoàn: Chỉ hiện khi có đơn chưa kết thúc
+    if (stats.cancellableCount > 0) {
+        btnCancel.style.display = 'inline-block';
+        btnCancel.textContent = (stats.vietqrRefundCount > 0)
+            ? 'Hủy / Chuyển hoàn (' + stats.cancellableCount + ' đơn)'
+            : 'Hủy (' + stats.cancellableCount + ' đơn)';
+    } else {
+        btnCancel.style.display = 'none';
+    }
+
+    // 3. Nút Xóa đơn cũ: Chỉ hiện khi TẤT CẢ các đơn chọn đều đã kết thúc
+    if (stats.deletableCount === stats.total) {
+        btnDelete.style.display = 'inline-block';
+        btnDelete.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa đơn cũ (' + stats.deletableCount + ')';
+    } else {
+        btnDelete.style.display = 'none';
+    }
+
+    // 4. Thông báo nếu không có thao tác hàng loạt nào hợp lệ (VD: toàn đơn Chờ hoàn tiền)
+    const hasAnyAction = (stats.pendingCount > 0 || stats.cancellableCount > 0 || stats.deletableCount === stats.total);
+    hintSpan.style.display = hasAnyAction ? 'none' : 'inline-block';
 }
 
 function submitBulkAction(actionType) {
@@ -492,9 +564,20 @@ function submitBulkAction(actionType) {
         alert('Vui lòng chọn ít nhất 1 đơn đặt sân!');
         return;
     }
-    const msg = (actionType === 'xacnhan_all') 
-        ? 'Bạn có chắc chắn muốn DUYỆT TẤT CẢ ' + checks.length + ' đơn đã chọn?' 
-        : 'Bạn có chắc chắn muốn HỦY ' + checks.length + ' đơn đã chọn và giải phóng slot?';
+
+    const stats = getBulkStats(checks);
+    let msg = '';
+    if (actionType === 'xacnhan_all') {
+        msg = 'Bạn có chắc chắn muốn DUYỆT ' + stats.pendingCount + ' đơn đang chờ xác nhận?';
+    } else if (actionType === 'huy_all') {
+        msg = 'Bạn có chắc chắn muốn HỦY ' + stats.cancellableCount + ' đơn chưa hoàn tất và giải phóng slot?';
+        if (stats.vietqrRefundCount > 0) {
+            msg += '\n(Lưu ý: ' + stats.vietqrRefundCount + ' đơn đã chuyển khoản VietQR sẽ tự động chuyển sang "Chờ hoàn tiền" để bảo lưu quyền lợi khách hàng).';
+        }
+    } else if (actionType === 'xoa_all') {
+        msg = 'Bạn có chắc chắn muốn XÓA VĨNH VIỄN ' + stats.deletableCount + ' đơn đã kết thúc khỏi danh sách?';
+    }
+
     if (!confirm(msg)) return;
 
     const form = document.getElementById('bulkActionForm');

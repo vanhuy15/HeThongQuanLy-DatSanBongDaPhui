@@ -22,10 +22,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['bulk_action'])) {
                 \Models\AuditLog::log($_SESSION['nguoi_dung_id'] ?? null, 'ADMIN_BULK_CONFIRM', 'dat_san', null, "Duyệt hàng loạt đơn ID: " . $ids_str);
             }
         } elseif ($bulk_action === 'huy_all') {
-            $conn->query("UPDATE dat_san SET trang_thai = 'Đã hủy' WHERE dat_san_id IN ($ids_str)");
+            // Đơn đã chuyển khoản VietQR (Chờ xác nhận / Đã xác nhận) -> Chuyển sang 'Chờ hoàn tiền' để không mất tiền khách
+            $conn->query("
+                UPDATE dat_san ds
+                JOIN thanh_toan tt ON ds.dat_san_id = tt.dat_san_id
+                SET ds.trang_thai = 'Chờ hoàn tiền'
+                WHERE ds.dat_san_id IN ($ids_str)
+                  AND ds.trang_thai IN ('Đã xác nhận', 'Chờ xác nhận')
+                  AND tt.phuong_thuc = 'chuyen_khoan'
+            ");
+            // Các đơn chưa kết thúc còn lại (Tiền mặt hoặc Chờ thanh toán) -> Chuyển sang 'Đã hủy'
+            $conn->query("
+                UPDATE dat_san
+                SET trang_thai = 'Đã hủy'
+                WHERE dat_san_id IN ($ids_str)
+                  AND trang_thai IN ('Chờ thanh toán', 'Chờ xác nhận', 'Đã xác nhận')
+            ");
+            // Giải phóng toàn bộ slot liên quan
             $conn->query("UPDATE dat_san_slots SET trang_thai = 'released' WHERE dat_san_id IN ($ids_str)");
             if (class_exists('\\Models\\AuditLog')) {
-                \Models\AuditLog::log($_SESSION['nguoi_dung_id'] ?? null, 'ADMIN_BULK_CANCEL', 'dat_san', null, "Hủy hàng loạt đơn ID: " . $ids_str);
+                \Models\AuditLog::log($_SESSION['nguoi_dung_id'] ?? null, 'ADMIN_BULK_CANCEL', 'dat_san', null, "Hủy / Chuyển hoàn hàng loạt đơn ID: " . $ids_str);
+            }
+        } elseif ($bulk_action === 'xoa_all') {
+            // Chỉ cho phép xóa cứng các đơn đã kết thúc hoàn toàn
+            $conn->query("DELETE FROM dat_san WHERE dat_san_id IN ($ids_str) AND trang_thai IN ('Đã hủy', 'Đã hoàn tiền', 'Đã từ chối')");
+            if (class_exists('\\Models\\AuditLog')) {
+                \Models\AuditLog::log($_SESSION['nguoi_dung_id'] ?? null, 'ADMIN_BULK_DELETE', 'dat_san', null, "Xóa dọn dẹp hàng loạt đơn cũ ID: " . $ids_str);
             }
         }
     }

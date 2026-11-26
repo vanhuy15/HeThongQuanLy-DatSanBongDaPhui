@@ -195,7 +195,6 @@ class CodeCoverageTracker
             mkdir($reportDir, 0777, true);
         }
 
-        $dateStr = date('d/m/Y H:i');
         $rowsHtml = '';
         foreach ($this->trackedFiles as $name => $data) {
             $linePct = round(($data['covered'] / $data['executable']) * 100, 1);
@@ -255,7 +254,7 @@ class CodeCoverageTracker
     <div class="box">
         <div class="head">
             <h1>BÁO CÁO ĐỘ BAO PHỦ MÃ NGUỒN (CODE COVERAGE)</h1>
-            <div class="meta">ISTQB White-Box | {$dateStr}</div>
+            <div class="meta">Công cụ: PHP Coverage Runner (PHP 8.2) | Bao phủ câu lệnh &amp; nhánh rẽ</div>
         </div>
 
         <div class="kpis">

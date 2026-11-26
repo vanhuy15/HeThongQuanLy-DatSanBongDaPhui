@@ -140,6 +140,17 @@ class UserController extends Controller
                 $chk_stmt->close();
             }
 
+            // 4. Kiểm tra trùng lặp số điện thoại với người dùng khác
+            if (empty($info_error)) {
+                $chk_sdt = $conn->prepare("SELECT nguoi_dung_id FROM nguoi_dung WHERE sdt = ? AND nguoi_dung_id != ?");
+                $chk_sdt->bind_param("si", $sdt, $nguoi_dung_id);
+                $chk_sdt->execute();
+                if ($chk_sdt->get_result()->num_rows > 0) {
+                    $info_error = "Số điện thoại này đã được sử dụng bởi một tài khoản khác!";
+                }
+                $chk_sdt->close();
+            }
+
             if (empty($info_error)) {
                 $update_stmt = $conn->prepare("UPDATE nguoi_dung SET ho_ten=?, sdt=?, email=? WHERE nguoi_dung_id=?");
                 $update_stmt->bind_param("sssi", $ho_ten, $sdt, $email, $nguoi_dung_id);

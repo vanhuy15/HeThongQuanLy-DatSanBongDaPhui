@@ -383,7 +383,7 @@ tester/
 └── 05_security_test/           # Kiểm toán An toàn Thông tin: OWASP Automated Runner (9/9 Pass)
 ```
 
-👉 **Xem chi tiết Ma trận 88 Test Cases, Kịch bản kiểm thử 14 chức năng và Báo cáo kiểm thử tại:**  
+👉 **Xem chi tiết Ma trận 98 Test Cases, Kịch bản kiểm thử 14 chức năng và Báo cáo kiểm thử tại:**  
 📖 **[Tài liệu kiểm thử phần mềm chi tiết (tester/README.md)](tester/README.md)**
 
 ---

@@ -160,6 +160,11 @@ class AuthController extends Controller {
                 $this->render('auth/register', ['error' => "Tên đăng nhập hoặc Email đã tồn tại!"]);
                 return;
             }
+
+            if (User::findByPhone($sdt)) {
+                $this->render('auth/register', ['error' => "Số điện thoại này đã được đăng ký cho một tài khoản khác!"]);
+                return;
+            }
             
             $hash_pass = password_hash($password, PASSWORD_DEFAULT);
             $new_uid = User::create($username, $hash_pass, $hoten, $email, $sdt, 'khach_hang');

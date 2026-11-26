@@ -21,13 +21,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $params = [$ho_ten, $sdt, $email];
     $types = "sss";
 
-    if (!preg_match('/^[0-9]{10}$/', $sdt)) {
-        $error = "Số điện thoại không hợp lệ! Phải bao gồm đúng 10 chữ số.";
+    if (!preg_match('/^(0[3|5|7|8|9])+([0-9]{8})$/', $sdt)) {
+        $error = "Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 chữ số (đầu số 03, 05, 07, 08, 09).";
     }
 
     $emailRegex = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|vn|net|org|edu|gov|info|biz|io|co|me|xyz|ai|pro|com\.vn|edu\.vn|gov\.vn|net\.vn|org\.vn)$/i';
     if (empty($error) && (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match($emailRegex, $email))) {
         $error = "Email không hợp lệ, vui lòng kiểm tra và thử lại!";
+    }
+
+    if (empty($error)) {
+        $chk_dup = $conn->prepare("SELECT nguoi_dung_id, email, sdt FROM nguoi_dung WHERE (email = ? OR sdt = ?) AND nguoi_dung_id != ?");
+        $chk_dup->bind_param("ssi", $email, $sdt, $nguoi_dung_id);
+        $chk_dup->execute();
+        $dup_row = $chk_dup->get_result()->fetch_assoc();
+        $chk_dup->close();
+        if ($dup_row) {
+            $error = ($dup_row['email'] === $email)
+                ? "Email này đã được sử dụng bởi một tài khoản khác!"
+                : "Số điện thoại này đã được sử dụng bởi một tài khoản khác!";
+        }
     }
 
     if (empty($error) && !empty($new_password)) {

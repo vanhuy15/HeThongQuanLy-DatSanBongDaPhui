@@ -56,6 +56,20 @@ class User
     }
 
     /**
+     * Tìm người dùng theo số điện thoại
+     */
+    public static function findByPhone($sdt)
+    {
+        $conn = Database::getConnection();
+        $stmt = $conn->prepare("SELECT * FROM nguoi_dung WHERE sdt = ?");
+        $stmt->bind_param("s", $sdt);
+        $stmt->execute();
+        $res = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return $res;
+    }
+
+    /**
      * Tạo tài khoản người dùng mới
      */
     public static function create($username, $hashedPassword, $hoTen, $email, $sdt, $vaiTro = 'khach_hang')

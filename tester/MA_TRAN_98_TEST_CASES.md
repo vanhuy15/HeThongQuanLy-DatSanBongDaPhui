@@ -1,13 +1,13 @@
-# 📊 BẢNG MA TRẬN TRUY VẾT 88 CA KIỂM THỬ (REQUIREMENT TRACEABILITY MATRIX)
-## Dự án: Hệ Thống Quản Lý Đặt Sân Bóng Đá Phủi Đà Nẵng (PitchManager)
+# 📊 BẢNG MA TRẬN TRUY VẾT 98 CA KIỂM THỬ (REQUIREMENT TRACEABILITY MATRIX)
+## Dự án: Hệ Thống Quản Lý - Đặt Sân Bóng Đá Phủi (PitchManager)
 > **Chuẩn kiểm thử:** ISTQB / IEEE 829 Software Testing Standards  
-> **Trạng thái thực thi:** `88/88 PASSED (100%)` | **Thời gian chạy:** `~0.3s` | **Công cụ:** `PHPUnit 10.5`
+> **Tổng hợp:** **98 Test Case thiết kế (Chương 2)** $\rightarrow$ **137 kịch bản thực thi tự động (Chương 3)** (`88 PHPUnit + 25 Postman API + 12 Playwright E2E + 3 JMeter + 9 OWASP`)
 
 ---
 
-## 📑 PHẦN 1: BẢNG 2.10.14 — MA TRẬN TRUY VẾT FR01–FR14 VỚI 88 CA KIỂM THỬ
+## 📑 PHẦN 1: BẢNG 2.10.14 — MA TRẬN TRUY VẾT FR01–FR14 VỚI 98 CA KIỂM THỬ
 
-Bảng dưới đây thiết lập mối quan hệ truy vết hai chiều (Bi-directional Traceability) giữa **14 Yêu cầu chức năng cốt lõi (FR01–FR14)** và **88 ca kiểm thử duy nhất**:
+Bảng dưới đây thiết lập mối quan hệ truy vết hai chiều (Bi-directional Traceability) giữa **14 Yêu cầu chức năng cốt lõi (FR01–FR14)** và **98 ca kiểm thử thiết kế**:
 
 | STT | Yêu cầu chức năng | Mã ca kiểm thử bao phủ | Số ca | File thực thi tương ứng trong `tester/01_unit_test/` |
 | :---: | :--- | :--- | :---: | :--- |
@@ -28,28 +28,28 @@ Bảng dưới đây thiết lập mối quan hệ truy vết hai chiều (Bi-di
 
 ---
 
-## 🔬 PHẦN 2: PHÂN BỐ 88 CA KIỂM THỬ THEO 10 KỸ THUẬT KIỂM THỬ TIÊU CHUẨN
+## 🔬 PHẦN 2: PHÂN BỐ 98 CA KIỂM THỬ THEO 10 KỸ THUẬT KIỂM THỬ TIÊU CHUẨN
 
-$$\text{Tổng số ca kiểm thử} = 18\text{ (EP)} + 18\text{ (BV)} + 10\text{ (DT)} + 8\text{ (ST)} + 8\text{ (UC)} + 6\text{ (EG)} + 4\text{ (ER)} + 4\text{ (WB)} + 4\text{ (CL)} + 8\text{ (PW)} = \mathbf{88\ \text{tests}}$$
+$$\text{Tổng số ca kiểm thử} = 22\text{ (EP)} + 28\text{ (BV)} + 8\text{ (DT)} + 8\text{ (ST)} + 6\text{ (UC)} + 6\text{ (EG)} + 4\text{ (ER)} + 4\text{ (WB)} + 4\text{ (CL)} + 8\text{ (PW)} = \mathbf{98\ \text{ca}}$$
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                    TỔNG HỢP 88 CA KIỂM THỬ THEO KỸ THUẬT                        │
+│                    TỔNG HỢP 98 CA KIỂM THỬ THEO KỸ THUẬT                        │
 ├───────┬──────────────────────────────────────────┬──────────┬───────────────────┤
 │ Mã KT │ Tên Kỹ Thuật Kiểm Thử                    │ Số lượng │ Dải mã ca kiểm thử│
 ├───────┼──────────────────────────────────────────┼──────────┼───────────────────┤
-│ EP    │ Equivalence Partitioning (Phân lớp tương)│ 18 tests │ TC-EP01 - TC-EP18 │
-│ BV    │ Boundary Value Analysis (Giá trị biên)   │ 18 tests │ TC-BV01 - TC-BV18 │
-│ DT    │ Decision Table (Bảng quyết định)         │ 10 tests │ TC-DT01 - TC-DT10 │
-│ ST    │ State Transition (Chuyển trạng thái)     │  8 tests │ TC-ST01 - TC-ST08 │
-│ UC    │ Use Case Testing (Ca sử dụng nghiệp vụ)  │  8 tests │ TC-UC01 - TC-UC08 │
-│ EG    │ Error Guessing (Đoán lỗi ngoại lệ)       │  6 tests │ TC-EG01 - TC-EG06 │
-│ ER    │ Error Handling (Bẫy lỗi & Xung đột CSDL) │  4 tests │ TC-ER01 - TC-ER04 │
-│ WB    │ White-Box / Basis Path (Hộp trắng)       │  4 tests │ TC-WB01 - TC-WB04 │
-│ CL    │ Checklist & Security (An toàn & RBAC)    │  4 tests │ TC-CL01 - TC-CL04 │
-│ PW    │ Pairwise Testing (Kiểm thử tổ hợp cặp)   │  8 tests │ TC-PW01 - TC-PW08 │
+│ EP    │ Equivalence Partitioning (Phân lớp tương)│ 22 ca    │ TC-EP01 - TC-EP22 │
+│ BV    │ Boundary Value Analysis (Giá trị biên)   │ 28 ca    │ TC-BV01 - TC-BV28 │
+│ DT    │ Decision Table (Bảng quyết định)         │  8 ca    │ TC-DT01 - TC-DT08 │
+│ ST    │ State Transition (Chuyển trạng thái)     │  8 ca    │ TC-ST01 - TC-ST08 │
+│ UC    │ Use Case Testing (Ca sử dụng nghiệp vụ)  │  6 ca    │ TC-UC01 - TC-UC06 │
+│ EG    │ Error Guessing (Đoán lỗi ngoại lệ)       │  6 ca    │ TC-EG01 - TC-EG06 │
+│ ER    │ Exploratory Regression (Khám phá & Hồi quy)│  4 ca    │ TC-ER01 - TC-ER04 │
+│ WB    │ White-Box / Basis Path (Hộp trắng)       │  4 ca    │ TC-WB01 - TC-WB04 │
+│ CL    │ Checklist & Security (An toàn & RBAC)    │  4 ca    │ TC-CL01 - TC-CL04 │
+│ PW    │ Pairwise Testing (Kiểm thử tổ hợp cặp)   │  8 ca    │ TC-PW01 - TC-PW08 │
 ├───────┴──────────────────────────────────────────┴──────────┴───────────────────┤
-│ TỔNG CỘNG: 88 CA KIỂM THỬ DUY NHẤT (100% PASSED)                               │
+│ TỔNG CỘNG: 98 CA KIỂM THỬ THIẾT KẾ (137 KỊCH BẢN TỰ ĐỘNG HÓA ĐA TẦNG)           │
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -120,50 +120,50 @@ $$\text{Tổng số ca kiểm thử} = 18\text{ (EP)} + 18\text{ (BV)} + 10\text
 - `TC-ST08`: Chuyển trạng thái: Chờ xác nhận quá giờ thi đấu ➔ Tự động sang Chờ hoàn tiền ➔ **PASS**
 
 ### 5. Nhóm UC: Use Case Testing (8 Ca: `TC-UC01` – `TC-UC08`)
-- `TC-UC01`: Kịch bản ca sử dụng tra cứu sân bóng: Tìm kiếm debounce ➔ Mở lọc quy mô ➔ Chọn sân ➔ **PASS**
-- `TC-UC02`: Kịch bản ca sử dụng xem hồ sơ cá nhân: Kiểm tra hạn mức uy tín, huy hiệu VIP/Thường ➔ **PASS**
-- `TC-UC03`: Kịch bản ca sử dụng đặt sân: Chọn ngày ➔ Chọn giờ ➔ Giữ chỗ ➔ Điều hướng thanh toán ➔ **PASS**
-- `TC-UC04`: Kịch bản ca sử dụng chống tranh chấp (Concurrency): Đặt cùng 1 slot đồng thời ➔ **PASS**
-- `TC-UC05`: Kịch bản ca sử dụng gửi đánh giá sau trận đấu: Chấm sao 1-5 ➔ Viết nhận xét ➔ Cộng +2 điểm ➔ **PASS**
-- `TC-UC06`: Kịch bản ca sử dụng Admin quản lý đơn: Lọc đơn theo tab ➔ Duyệt đơn ➔ Xác nhận thu tiền ➔ **PASS**
-- `TC-UC07`: Kịch bản ca sử dụng Admin báo cáo doanh thu: Lọc theo khoảng ngày ➔ Đối soát ➔ Xuất Excel ➔ **PASS**
-- `TC-UC08`: Kịch bản ca sử dụng Admin điều chỉnh uy tín: Mở popup ➔ Nhập điểm & lý do ➔ Ghi log ➔ **PASS**
+- `TC-UC01`: Kịch bản tra cứu & lọc sân bóng: Tìm kiếm debounce 500ms ➔ Lọc loại sân & khoảng giá ➔ Xem chi tiết ➔ **PASS**
+- `TC-UC02`: Kịch bản đặt sân và giữ chỗ 10 phút: Tải sơ đồ 2D ➔ Khóa dòng FOR UPDATE ➔ Chờ thanh toán 10 phút ➔ **PASS**
+- `TC-UC03`: Kịch bản thanh toán VietQR & xác nhận tự động: Sinh QR MB Bank ➔ Polling 2.5s / Webhook SePAY ➔ Đã xác nhận ➔ **PASS**
+- `TC-UC04`: Kịch bản đặt sân 7 và khóa chéo sân con: Đặt cụm 7.1 (A+B) ➔ Khóa đồng thời 2 slot 5A và 5B ➔ **PASS**
+- `TC-UC05`: Kịch bản hủy đơn và yêu cầu hoàn tiền: Nhập STK nhận hoàn tiền ➔ Phạt điểm theo mốc giờ ➔ Giải phóng slot ➔ **PASS**
+- `TC-UC06`: Kịch bản Admin quản lý đặt sân & người dùng: Duyệt/từ chối/thu tiền mặt/báo bùng/hoàn tiền & khóa tài khoản ➔ **PASS**
+- `TC-UC07`: Kịch bản Admin báo cáo doanh thu: Lọc theo khoảng ngày ($\ge$ 2025-01-01) ➔ Đối soát ➔ Xuất Excel `.xls` ➔ **PASS**
+- `TC-UC08`: Kịch bản Admin điều chỉnh điểm uy tín thủ công (`capnhat_uytin.php`): Nhập điểm & lý do ➔ Ghi `lich_su_uy_tin` & `audit_logs` ➔ **PASS**
 
 ### 6. Nhóm EG: Error Guessing (6 Ca: `TC-EG01` – `TC-EG06`)
-- `TC-EG01`: Đoán lỗi tranh chấp Race Condition: Hai yêu cầu gửi lên tại cùng mili-giây (SELECT FOR UPDATE) ➔ **PASS**
-- `TC-EG02`: Đoán lỗi chuyển khoản thiếu tiền: Số tiền chuyển khoản nhỏ hơn giá tiền sân quy định ➔ **PASS**
-- `TC-EG03`: Đoán lỗi nội dung chuyển khoản: Sai cú pháp quy định (không chứa DATSAN <id>) ➔ **PASS**
-- `TC-EG04`: Đoán lỗi Webhook giả mạo: Request gọi vào Webhook SePAY thiếu Bearer Token ➔ **PASS**
-- `TC-EG05`: Đoán lỗi hủy trận đấu trong quá khứ hoặc trận đấu đang diễn ra ➔ **PASS**
-- `TC-EG06`: Đoán lỗi Admin xóa sân bóng khi cơ sở này đang có các đơn đặt trong tương lai ➔ **PASS**
+- `TC-EG01`: Thao tác giữ chỗ và thanh toán cận mốc 600 giây (599s hợp lệ vs $\ge$ 600s tự động hủy & giải phóng slot) ➔ **PASS**
+- `TC-EG02`: Lách giao diện gửi POST đặt Sân 7 khi sân con 5A đã bận (Backend `bookWithLock()` & `FOR UPDATE` từ chối) ➔ **PASS**
+- `TC-EG03`: Kiểm tra vượt trần điểm uy tín tối đa 100 điểm (`User::clampReputation()` kẹp cứng trong `[0, 100]`) ➔ **PASS**
+- `TC-EG04`: Lách điều kiện điểm uy tín (< 60đ) chọn tiền mặt hoặc truy cập trái phép `/admin/*` ➔ Backend chặn ➔ **PASS**
+- `TC-EG05`: Xóa sân bóng đang có lịch đặt chưa hoàn thành (Kiểm tra ràng buộc xóa sân trong `SanBong::delete()`) ➔ **GHI NHẬN DEFECT**
+- `TC-EG06`: Kiểm tra sai lệch doanh thu với đơn Chờ thanh toán / Đã hủy / Chờ hoàn tiền và đối chiếu file xuất Excel `.xls` ➔ **PASS**
 
-### 7. Nhóm ER: Error Handling (4 Ca: `TC-ER01` – `TC-ER04`)
-- `TC-ER01`: Bẫy lỗi CSDL: Bắt lỗi vi phạm ràng buộc UNIQUE KEY active_key trên bảng dat_san_slots (MySQL 1062) ➔ **PASS**
-- `TC-ER02`: Bẫy lỗi khung giờ hoặc sân bóng không tồn tại trong hệ thống (ID = 0 hoặc âm) ➔ **PASS**
-- `TC-ER03`: Bẫy lỗi người dùng không tồn tại khi thực hiện cộng/trừ điểm uy tín hoặc gửi thông báo ➔ **PASS**
-- `TC-ER04`: Bẫy lỗi kết quả tìm kiếm rỗng: Hiển thị Empty State thân thiện thay vì làm sập trang ➔ **PASS**
+### 7. Nhóm ER: Exploratory Regression (4 Ca: `TC-ER01` – `TC-ER04`)
+- `TC-ER01`: Charter hồi quy: Đổi giá khung giờ trên bảng `khung_gio` và kiểm tra tính nhất quán hiển thị giá đơn cũ (Price Snapshot) ➔ **GHI NHẬN THIẾU SÓT THIẾT KẾ**
+- `TC-ER02`: Charter khám phá: Đồng bộ sơ đồ 2D khi giữ chỗ, hủy đơn và hết hạn 10 phút chồng chéo trên cụm ghép 5A–5B–Sân 7 ➔ **PASS**
+- `TC-ER03`: Charter hồi quy: Chuỗi biến động điểm uy tín liên tiếp ($90 \rightarrow 95 \rightarrow 97 \rightarrow 82 \rightarrow 57$) kết thúc bằng báo bùng sân `-25đ` ➔ **PASS**
+- `TC-ER04`: Charter khám phá: Trải nghiệm đặt sân, sơ đồ 2D và thanh toán VietQR trên giao diện di động & mạng chậm 3G ➔ **PASS**
 
 ### 8. Nhóm WB: White-Box / Basis Path (4 Ca: `TC-WB01` – `TC-WB04`)
-- `TC-WB01`: Đường cơ sở 1: Đường $1 \rightarrow 2 \rightarrow 8$ (Bao phủ nhánh đơn chưa duyệt, không phạt) ➔ **PASS**
-- `TC-WB02`: Đường cơ sở 2: Đường $1 \rightarrow 2 \rightarrow 3 \rightarrow 5 \rightarrow 7 \rightarrow 8$ (Bao phủ nhánh đơn đã duyệt hủy sớm $> 24h$, không phạt) ➔ **PASS**
-- `TC-WB03`: Đường cơ sở 3: Đường $1 \rightarrow 2 \rightarrow 3 \rightarrow 5 \rightarrow 6 \rightarrow 7 \rightarrow 8$ (Bao phủ nhánh đơn đã duyệt hủy trong $12h - 24h$, phạt 5 điểm) ➔ **PASS**
-- `TC-WB04`: Đường cơ sở 4: Đường $1 \rightarrow 2 \rightarrow 3 \rightarrow 4 \rightarrow 7 \rightarrow 8$ (Bao phủ nhánh đơn đã duyệt hủy sát giờ $< 12h$, phạt 15 điểm) ➔ **PASS**
+- `TC-WB01`: Đường cơ sở 1 ($1 \rightarrow 2 \rightarrow 8$): Hủy đơn chưa ở trạng thái `Đã xác nhận` (`$penalty_points = 0`, không trừ điểm) ➔ **PASS**
+- `TC-WB02`: Đường cơ sở 2 ($1 \rightarrow 2 \rightarrow 3 \rightarrow 5 \rightarrow 7 \rightarrow 8$): Hủy đơn `Đã xác nhận` trước trên 24 giờ (`$penalty_points = 0`) ➔ **PASS**
+- `TC-WB03`: Đường cơ sở 3 ($1 \rightarrow 2 \rightarrow 3 \rightarrow 5 \rightarrow 6 \rightarrow 7 \rightarrow 8$): Hủy đơn `Đã xác nhận` trong khoảng 12–24 giờ (`$penalty_points = 5`) ➔ **PASS**
+- `TC-WB04`: Đường cơ sở 4 ($1 \rightarrow 2 \rightarrow 3 \rightarrow 4 \rightarrow 7 \rightarrow 8$): Hủy đơn `Đã xác nhận` sát giờ dưới 12 giờ (`$penalty_points = 15`) ➔ **PASS**
 
 ### 9. Nhóm CL: Checklist & Security (4 Ca: `TC-CL01` – `TC-CL04`)
-- `TC-CL01`: Checklist kiểm tra khoảng đệm 5 phút chuẩn bị sân (Lead Time Buffer): Khung giờ sát đá bị khóa ➔ **PASS**
-- `TC-CL02`: Checklist kiểm tra phân quyền RBAC: Chặn người dùng thường và khách vãng lai truy cập `/admin/*` ➔ **PASS**
-- `TC-CL03`: Checklist kiểm tra Anti-CSRF Token: Bắt buộc mã token 64-hex hợp lệ cho mọi request POST ➔ **PASS**
-- `TC-CL04`: Checklist kiểm tra SQL Injection và XSS: Toàn bộ câu truy vấn dùng Prepared Statements ➔ **PASS**
+- `TC-CL01`: Checklist giao diện & khả dụng: Tìm kiếm debounce 500ms, sơ đồ 2D 3 màu, định dạng tiền Việt, khóa giờ quá khứ, responsive mobile ➔ **PASS**
+- `TC-CL02`: Checklist bảo mật theo OWASP: Anti-CSRF Token 64-hex, phân quyền RBAC Admin, ẩn lỗi SQL, mã hóa BCRYPT, khóa session sau logout ➔ **PASS**
+- `TC-CL03`: Checklist thanh toán VietQR & đối soát: Đúng STK/tiền/nội dung `DATSAN <id>`, polling/webhook tự động, hết hạn 10 phút tự hủy ➔ **PASS**
+- `TC-CL04`: Checklist báo cáo doanh thu & xuất file: Giới hạn $\ge$ 2025-01-01, khớp tổng Tiền mặt + VietQR, file `.xls` UTF-8 BOM đúng tiếng Việt ➔ **PASS**
 
 ### 10. Nhóm PW: Pairwise Testing (8 Ca: `TC-PW01` – `TC-PW08`)
-- `TC-PW01`: Cặp tham số: Sân 5 + Giờ thường (ngày trong tuần) ➔ Tính đúng đơn giá cơ bản ➔ **PASS**
-- `TC-PW02`: Cặp tham số: Sân 5 + Giờ vàng buổi tối ➔ Tính đúng giá giờ cao điểm theo cấu hình ➔ **PASS**
-- `TC-PW03`: Cặp tham số: Sân 5 + Khung giờ thường ➔ Hiển thị đúng đơn giá cơ sở cấu hình (250.000đ) ➔ **PASS**
-- `TC-PW04`: Cặp tham số: Sân 5 + Khung giờ cao điểm (giờ vàng) ➔ Áp dụng đúng giá cao điểm theo cấu hình (350.000đ) ➔ **PASS**
-- `TC-PW05`: Cặp tham số: Sân 7 ghép + Giờ thường ➔ Áp dụng đơn giá sân 7 hoặc nhân hệ số ghép ➔ **PASS**
-- `TC-PW06`: Cặp tham số: Sân 7 ghép + Giờ vàng buổi tối ➔ Tính đúng giá cao điểm cho sân 7 ➔ **PASS**
-- `TC-PW07`: Cặp tham số: Sân 7 ghép + Khung giờ cao điểm ➔ Áp dụng đúng giá cao điểm sân 7 theo cấu hình (540.000đ) ➔ **PASS**
-- `TC-PW08`: Cặp tham số: Sân 7 ghép + Fallback multiplier (1.6x) khi chưa cấu hình giá sân 7 riêng ➔ **PASS**
+- `TC-PW01`: Tổ hợp 1: Sân 5 $\times$ 16:30 $\times$ Ngày thường $\times$ Tiền mặt $\times$ Điểm $\ge$ 60 ➔ Đơn `Chờ xác nhận`, tổng `250.000đ` ➔ **PASS**
+- `TC-PW02`: Tổ hợp 2: Sân 5 $\times$ 17:30 $\times$ Cuối tuần $\times$ VietQR $\times$ Điểm 40–59 ➔ Giữ chỗ, mã QR `350.000đ` ➔ **PASS**
+- `TC-PW03`: Tổ hợp 3: Sân 7 $\times$ 16:30 $\times$ Cuối tuần $\times$ Tiền mặt $\times$ Điểm 40–59 ➔ Khóa tiền mặt, đổi VietQR `360.000đ` & khóa chéo 2 sân con ➔ **PASS**
+- `TC-PW04`: Tổ hợp 4: Sân 7 $\times$ 17:30 $\times$ Ngày thường $\times$ VietQR $\times$ Điểm $\ge$ 60 ➔ Giữ chỗ `540.000đ` & khóa chéo 2 sân con ➔ **PASS**
+- `TC-PW05`: Tổ hợp 5: Sân 5 $\times$ 17:30 $\times$ Ngày thường $\times$ VietQR $\times$ Điểm $\ge$ 60 ➔ Giữ chỗ 10 phút, mã QR `350.000đ` ➔ **PASS**
+- `TC-PW06`: Tổ hợp 6: Sân 7 $\times$ 16:30 $\times$ Ngày thường $\times$ Tiền mặt $\times$ Điểm $\ge$ 60 ➔ Đơn `Chờ xác nhận` `360.000đ` & khóa chéo ➔ **PASS**
+- `TC-PW07`: Tổ hợp 7: Sân 5 $\times$ 16:30 $\times$ Cuối tuần $\times$ Tiền mặt $\times$ Điểm 40–59 ➔ Khóa tiền mặt, đổi VietQR `250.000đ` ➔ **PASS**
+- `TC-PW08`: Tổ hợp 8: Sân 7 $\times$ 17:30 $\times$ Cuối tuần $\times$ VietQR $\times$ Điểm 40–59 ➔ Giữ chỗ `540.000đ` & khóa chéo 2 sân con ➔ **PASS**
 
 ---
 
